@@ -1,5 +1,6 @@
 node_modules/
 .netlify/
+example/
 .env
 .env.*
 !.env.example
