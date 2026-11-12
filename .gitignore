@@ -6,3 +6,6 @@ node_modules/
 service-account*.json
 google-credentials*.json
 teman-baik-123-7e2148d71767.json
+.env.example
+Kode.js
+content_planner_project_context.md
