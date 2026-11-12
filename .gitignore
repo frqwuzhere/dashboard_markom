@@ -1,0 +1,8 @@
+node_modules/
+.netlify/
+.env
+.env.*
+!.env.example
+service-account*.json
+google-credentials*.json
+teman-baik-123-7e2148d71767.json

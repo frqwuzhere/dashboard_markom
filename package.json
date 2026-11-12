@@ -1,0 +1,14 @@
+{
+  "name": "content-planner",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "netlify dev"
+  },
+  "dependencies": {
+    "googleapis": "^189.0.0"
+  },
+  "devDependencies": {
+    "netlify-cli": "^27.17.0"
+  }
+}
