@@ -25,7 +25,11 @@ button{cursor:pointer;background:none;border:0}
 a{color:inherit}
 :focus-visible{outline:2px solid var(--ac);outline-offset:2px}
 .i{flex-shrink:0;display:block}
-h1,h2,h3,.fd{font-family:var(--fd);letter-spacing:-.015em}
+
+h1,h2,h3,.fd {
+  font-family:var(--fd);
+  letter-spacing:-.015em
+}
 
 /* ================= Layout ================= */
 .app{display:flex;height:100vh;height:100dvh}
@@ -40,6 +44,18 @@ h1,h2,h3,.fd{font-family:var(--fd);letter-spacing:-.015em}
 .av.sm{width:26px;height:26px;border-radius:8px;font-size:11px}
 .av.lg{width:52px;height:52px;border-radius:15px;font-size:19px}
 .av.all{background:conic-gradient(#4f46e5 0 33%,#0d9488 0 66%,#e11d48 0)}
+.av.has-image {
+  overflow: hidden;
+  background: transparent;
+}
+.av.has-image img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+  padding: 4px;
+  border-radius: inherit;
+}
 .acc-btn .t{flex:1;min-width:0}
 .acc-btn .t b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .acc-btn .t span{font-size:12px;color:var(--ink3)}
@@ -265,7 +281,34 @@ input[type=color].in{padding:4px;height:42px}
 .crow .in{flex:1;min-height:38px;padding:8px 10px}
 .addrow{align-self:flex-start}
 .hint{font-size:12px;color:var(--ink3)}
-.ov{position:fixed;inset:0;background:var(--scrim);display:none;align-items:center;justify-content:center;z-index:60;padding:20px}
+.avatar-field {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.avatar-preview { flex: 0 0 auto; }
+.avatar-inputs {
+  display: grid;
+  flex: 1 1 260px;
+  gap: 8px;
+  min-width: 0;
+}
+.avatar-file { display: none; }
+
+.avatar-upload {
+  width: fit-content;
+  cursor: pointer;
+}
+.ov {
+  position:fixed;
+  inset:0;background:var(--scrim);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:60;
+  padding:20px
+}
 .ov.open{display:flex}
 .sheet{background:var(--card);width:min(680px,100%);max-height:92vh;border-radius:22px;display:flex;flex-direction:column;box-shadow:var(--pop);animation:pop .18s ease-out}
 .sheet.narrow{width:min(440px,100%)}
@@ -285,6 +328,43 @@ input[type=color].in{padding:4px;height:42px}
 .menu hr{border:0;border-top:1px solid var(--line);margin:6px 0}
 .pop{position:fixed;z-index:55;background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--pop);padding:6px;width:280px;max-height:calc(100dvh - 24px);overflow-y:auto;overscroll-behavior:contain;display:none;animation:pop .14s ease-out}
 .pop.open{display:block}
+.nav-tooltip {
+  position: fixed;
+  z-index: 3269;
+  max-width: 240px;
+  padding: 7px 10px;
+  border-radius: 6px;
+  background: #303133;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.3;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: scale(.98);
+  transition: opacity .12s ease, transform .12s ease, visibility .12s;
+}
+.nav-tooltip.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: scale(1);
+}
+.nav-tooltip::before {
+  position: absolute;
+  top: 50%;
+  left: -4px;
+  width: 8px;
+  height: 8px;
+  background: inherit;
+  content: '';
+  transform: translateY(-50%) rotate(45deg);
+}
+.nav-tooltip.left::before {
+  right: -4px;
+  left: auto;
+}
 .opts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .opt{border:1.5px solid var(--line);border-radius:12px;padding:10px;text-align:left;display:flex;flex-direction:column;gap:4px;background:var(--card)}
 .opt.on{border-color:var(--ac);background:var(--acsoft)}
@@ -386,7 +466,6 @@ h1,h2,h3,.fd{letter-spacing:-.02em}
 .head{background:transparent;border:0;padding:20px 28px 8px;gap:12px}
 .head h1{font-size:24px;font-weight:800}
 .head .sub{margin-top:3px;font-size:13px}
-.hsearch{width:320px;height:46px;border-radius:999px;background:var(--card);border:1px solid var(--line);box-shadow:var(--sh);padding:0 18px}
 .chips{display:flex;gap:18px;align-items:center;margin:0 6px;font-weight:800;font-size:17px}
 .chips span{display:inline-flex;align-items:center;gap:7px}
 #bellBtn,#refBtn{position:relative;border-radius:50%;width:44px;height:44px;background:var(--card);box-shadow:var(--sh);border-color:transparent}
@@ -542,26 +621,55 @@ h1,h2,h3,.fd{letter-spacing:-.02em}
 .mark .logo{width:44px;height:44px;border-radius:14px;background:#e3f0ff;box-shadow:none;display:grid;place-items:center}
 .mark b{font-size:19px;letter-spacing:-.02em}.mark small{display:block;font-size:10.5px;margin-top:2px;white-space:nowrap}
 #rnav{order:2;display:flex;flex-direction:column;gap:6px}
-.navi{padding:12px 14px;font-size:14.5px;gap:14px;border-radius:14px}
+.navi {
+  padding: 9px 11px;
+  font-size: 13.5px;
+  gap: 11px;
+  border-radius: 12px;
+}
+.navi .i { width: 18px; height: 18px; }
 .navi.active{background:#dcebff;color:var(--ac);font-weight:700}
 [data-mode=dark] .navi.active{background:var(--acsoft)}
 .promo{border-radius:20px;background:linear-gradient(160deg,#eaf3ff,#dcebff)}
 .promo .pi{background:#fff1bf;color:#e0a100;width:40px;height:40px}
 .prof{order:5;display:flex;align-items:center;gap:6px;margin-top:10px}
-.prof .acc-btn{order:0;flex:1;min-width:0;border:0;box-shadow:0 4px 16px rgba(37,99,235,.10);border-radius:18px;padding:10px 12px}
+.prof .acc-btn{order:0;flex:1;min-width:0;border:0;box-shadow:0 4px 16px rgba(37,99,235,.10);border-radius:14px;padding:10px 12px}
 .prof .acc-btn .chev{display:none}
 .gearb{width:36px;height:36px;border-radius:50%;color:var(--ink2)}
 .gearb:hover,.gearb.active{background:var(--acsoft);color:var(--ac)}
 .rail-foot{display:none}
-.head{padding:22px 28px 6px;gap:12px}
+.head{padding:14px 24px 6px;gap:7px}
 .head .ttl{flex:0 1 auto;min-width:0;margin-right:6px}
-.head h1{font-size:26px;overflow:visible;text-overflow:clip}
+.head h1{font-size:23px;overflow:visible;text-overflow:clip}
 .head .sub{max-width:280px;overflow:hidden;white-space:nowrap}
 .hsp{flex:1;min-width:0}
-.hsearch{width:min(340px,34vw);flex:0 1 340px;height:46px;border-radius:999px}
-.chips{gap:16px;margin:0 8px 0 0;font-size:17px}
-#modeBtn,#expBtnD{border-radius:50%;width:44px;height:44px;background:var(--card);box-shadow:var(--sh);border-color:transparent}
-.head .newb{height:44px;border-radius:999px;padding:0 20px;box-shadow:0 8px 18px color-mix(in srgb,var(--ac) 30%,transparent)}
+.chips{gap:12px;margin:0 6px 0 0;font-size:14px}
+#modeBtn,#expBtnD{border-radius:50%;width:38px;height:38px;background:var(--card);box-shadow:var(--sh);border-color:transparent}
+.head .ib{width:34px;height:34px;border-radius:50%}
+.head .ib .i{width:18px;height:18px}
+.profile-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 2px;
+  border: 1px solid color-mix(in srgb, var(--line) 55%, transparent);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.profile-nav:hover { border-color: color-mix(in srgb, var(--ac) 45%, var(--line)); }
+.profile-nav .av { width: 34px; height: 34px; border-radius: 50%; font-size: 11px; }
+.profile-nav .i { color: var(--ink3); }
+.head .newb {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 50%;
+}
 .hero2{min-height:300px;border-radius:26px}
 .hero2 .ht{max-width:44%}
 .hero2 .art{width:74%}
@@ -586,7 +694,6 @@ h1,h2,h3,.fd{letter-spacing:-.02em}
   .rail .mark div{display:none}.mark{padding:2px 0 14px}
   .rail .navi{justify-content:center;width:48px;padding:12px 0}
   .prof{flex-direction:column}.prof .acc-btn{width:auto;padding:6px;box-shadow:none}.prof .acc-btn .t{display:none}
-  .hsearch{display:none!important}
 }
 @media (max-width:900px){
   .dwrap{grid-template-columns:1fr}
@@ -619,13 +726,24 @@ body,button,input,select,textarea{font-family:var(--fp)}
 /* ---------- Kerangka: menu di kanan ---------- */
 .app{background:var(--bg)}
 html[data-side=right] .app{flex-direction:row-reverse}
-.app .rail{width:252px;margin:12px;height:calc(100vh - 24px);height:calc(100dvh - 24px);border:0;border-radius:28px;
-  background:var(--card);box-shadow:var(--blueSh);padding:18px 14px 14px;gap:6px;scrollbar-width:none}
+.app .rail {
+  width: 224px;
+  margin: 12px;
+  height: calc(100vh - 24px);
+  height: calc(100dvh - 24px);
+  border: 0;
+  border-radius: 28px;
+  background: var(--card);
+  box-shadow: var(--blueSh);
+  padding: 18px 10px 14px;
+  gap: 6px;
+  scrollbar-width: none;
+}
 .app .rail::-webkit-scrollbar{display:none}
 .app .main{position:relative}
-.app .head{position:relative;z-index:3;margin:0;padding:22px 28px 26px;gap:12px;background:var(--hd);color:#fff;
+.app .head{position:relative;z-index:3;margin:0;padding:10px 20px 12px;gap:8px;background:var(--hd);color:#fff;
   border-radius:0 0 34px 34px;box-shadow:0 14px 30px rgba(24,70,150,.2)}
-.app .head h1{color:#fff;font-size:25px;font-weight:800;white-space:normal}
+.app .head h1{color:#fff;font-size:22px;font-weight:800;white-space:normal}
 .app .head .sub,.app .head .sub .muted{color:rgba(255,255,255,.82)}
 .app .head .ib{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);color:#fff;border-radius:14px}
 .app .head .ib.bare{background:transparent;border-color:transparent}
@@ -633,18 +751,59 @@ html[data-side=right] .app{flex-direction:row-reverse}
 .app .head .chips{color:#fff}
 .app .head .ttl{flex:0 1 auto;min-width:0}
 .app .head .sub{max-width:none;overflow:visible}
-.app .head #bellBtn,.app .head #refBtn,.app .head #modeBtn,.app .head #expBtnD{border-radius:14px;width:44px;height:44px}
-.app .head .search{background:#fff;border:0;border-radius:999px;height:44px;box-shadow:0 6px 16px rgba(10,40,100,.18)}
+.app .head #bellBtn,.app .head #refBtn,.app .head #modeBtn,.app .head #expBtnD,.app .head #topSetBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+}
+.app .head .ib .i { width: 16px; height: 16px; }
+.app .head .newb {
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(255, 255, 255, .32);
+  background: rgba(255, 255, 255, .18);
+  color: #fff;
+  box-shadow: none;
+}
+.app .head .newb:hover { background: rgba(255, 255, 255, .3); }
+.app .head .search {
+  height: 38px;
+  border: 0;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 6px 16px rgba(10, 40, 100, .18);
+}
 .app .head .search input{color:#10213f}
-.app .head #bellBtn,.app .head #refBtn,.app .head #modeBtn,.app .head #expBtnD{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.32);color:#fff;box-shadow:none}
-.app .head #bellBtn:hover,.app .head #refBtn:hover,.app .head #modeBtn:hover,.app .head #expBtnD:hover{background:rgba(255,255,255,.3)}
+.app .head #bellBtn,.app .head #refBtn,.app .head #modeBtn,.app .head #expBtnD,.app .head #topSetBtn {
+  border: 1px solid rgba(255, 255, 255, .32);
+  background: rgba(255, 255, 255, .18);
+  color: #fff;
+  box-shadow: none;
+}
+.app .head #bellBtn:hover,.app .head #refBtn:hover,.app .head #modeBtn:hover,.app .head #expBtnD:hover,.app .head #topSetBtn:hover {
+  background: rgba(255, 255, 255, .3);
+}
+.app .head .profile-nav {
+  min-height: 34px;
+  border-color: rgba(255, 255, 255, .22);
+  background: transparent;
+  color: #fff;
+}
+.app .head .profile-nav:hover { background: rgba(255, 255, 255, .12); }
+.app .head .profile-nav .av { width: 28px; height: 28px; }
 .app .head .btn.pri{background:#fff;color:#1b4fb8;border:0;box-shadow:0 8px 18px rgba(10,40,100,.2)}
 .app .body{padding:22px 28px 60px}
 .app .pn,.app .sd,.app .sc,.app .card,.app .kpi{border:0;border-radius:24px;box-shadow:var(--blueSh)}
 .app .sh h3{font-size:18px;font-weight:800}
 
 /* ---------- Menu navigasi (rail) ---------- */
-.app .navi{padding:11px 14px;border-radius:16px;gap:14px;font-weight:600;color:var(--ink2)}
+.app .navi {
+  padding: 11px 10px;
+  border-radius: 16px;
+  gap: 14px;
+  font-weight: 600;
+  color: var(--ink2);
+}
 .app .navi:hover{background:var(--tile);color:var(--ink)}
 .app .navi.active{background:linear-gradient(135deg,#10264b,#1c3f74);color:#fff;box-shadow:0 8px 18px rgba(16,38,75,.28)}
 .app .navi .cnt{background:var(--tile);color:var(--ink2)}
@@ -762,11 +921,21 @@ html[data-side=right] .app{flex-direction:row-reverse}
 @media (max-width:900px){.pgc{padding-bottom:50px}}
 @media (max-width:760px){
   .app .rail{display:none}
-  .app .head{padding:16px 16px 20px;border-radius:0 0 28px 28px}
-  .app .head h1{font-size:21px}
+  .app .head{padding:12px 12px 14px;border-radius:0 0 24px 24px;gap:6px}
+  .app .head h1{font-size:19px}
   .app .head .ttl{flex:1}
   .app .head .sub{max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
-  .app .head #bellBtn,.app .head #refBtn,.app .head #modeBtn,.app .head #expBtnD{width:40px;height:40px;border-radius:13px}
+   .app .head #bellBtn,.app .head #refBtn,.app .head #modeBtn,.app .head #expBtnD,.app .head #topSetBtn{width:30px;height:30px;border-radius:9px}
+   .app .head .newb{width:30px;height:30px}
+   .app .head .profile-nav{min-height:32px;padding:1px}
+   .app .head .profile-nav .av{width:28px;height:28px}
+   .app .head .profile-nav > span:not(.av) {
+     display: block;
+     max-width: 88px;
+     overflow: hidden;
+     text-overflow: ellipsis;
+   }
+   .app .head .profile-nav > .i { display: none; }
   .app .head .ib{border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.16)}
   .app .body{padding:18px 14px 130px}
   .pgc{gap:14px;padding:20px 16px 44px}
@@ -804,20 +973,20 @@ body.locked{position:fixed;inset:0;width:100%;height:100%;overflow:hidden}
 }
 
 /* ---------- Collapsible desktop sidebar ---------- */
-.app.nav-collapsed>.rail{width:76px!important;min-width:76px;flex:0 0 76px;align-items:center;padding:16px 10px!important}
+.app.nav-collapsed>.rail{width:64px!important;min-width:64px;flex:0 0 64px;align-items:center;padding:16px 6px!important}
 .app.nav-collapsed>.rail .mark{justify-content:center;padding:2px 0 14px;margin-bottom:6px}
 .app.nav-collapsed>.rail .mark>div,.app.nav-collapsed>.rail .new span,.app.nav-collapsed>.rail .navi span,.app.nav-collapsed>.rail .acc-btn .t,.app.nav-collapsed>.rail .acc-btn .chev{display:none!important}
-.app.nav-collapsed>.rail .new,.app.nav-collapsed>.rail .navi{width:48px;justify-content:center;padding-left:0;padding-right:0}
+.app.nav-collapsed>.rail .new,.app.nav-collapsed>.rail .navi{width:44px;justify-content:center;padding-left:0;padding-right:0}
 .app.nav-collapsed>.rail .promo,.app.nav-collapsed>.rail .nw{display:none!important}
 .app.nav-collapsed>.rail .prof{flex-direction:column;align-items:center}
 .app.nav-collapsed>.rail .prof .acc-btn{width:48px;justify-content:center;padding:8px}
 .app.nav-collapsed>.rail .rail-foot{display:none}
 @media (min-width:761px){
-  .app:not(.nav-collapsed)>.rail{width:252px!important;min-width:252px;flex:0 0 252px;align-items:stretch;padding:18px 14px 14px!important}
-  .app:not(.nav-collapsed)>.rail .mark{justify-content:flex-start;padding:2px 8px 16px;margin-bottom:10px}
+  .app:not(.nav-collapsed)>.rail{width:224px!important;min-width:224px;flex:0 0 224px;align-items:stretch;padding:18px 8px 14px!important}
+  .app:not(.nav-collapsed)>.rail .mark{justify-content:flex-start;padding:2px 6px 16px;margin-bottom:10px}
   .app:not(.nav-collapsed)>.rail .mark>div,.app:not(.nav-collapsed)>.rail .new span,.app:not(.nav-collapsed)>.rail .navi span,.app:not(.nav-collapsed)>.rail .acc-btn .t{display:block!important}
   .app:not(.nav-collapsed)>.rail .new{width:100%;justify-content:center}
-  .app:not(.nav-collapsed)>.rail .navi{width:100%;justify-content:flex-start;padding:11px 14px}
+  .app:not(.nav-collapsed)>.rail .navi{width:100%;justify-content:flex-start;padding:11px 8px}
   .app:not(.nav-collapsed)>.rail .prof{flex-direction:row;align-items:center}
   .app:not(.nav-collapsed)>.rail .prof .acc-btn{width:auto;flex:1;justify-content:flex-start;padding:10px 12px}
 }
@@ -829,3 +998,32 @@ body.locked{position:fixed;inset:0;width:100%;height:100%;overflow:hidden}
 .acc-nav{display:flex;gap:8px;margin-left:auto}
 .acc-nav button{width:34px;height:34px;display:grid;place-items:center;border:1px solid var(--line);border-radius:50%;background:var(--card);color:var(--ac);box-shadow:var(--sh)}
 .acc-nav button:hover{background:var(--acsoft)}
+
+/* ---------- Compact cards ---------- */
+.app .pn,
+.app .sd,
+.app .sc,
+.app .card,
+.app .kpi {
+  border-radius: 18px;
+}
+.app .pn,
+.app .sd { padding: 15px; }
+.app .sc,
+.app .card { padding: 14px; }
+.app .kpi { padding: 11px 13px; }
+.app .dg,
+.app .grid,
+.app .sg,
+.app .kpis,
+.app .mg { gap: 10px; }
+.app .mt {
+  min-height: 96px;
+  padding: 14px 8px 12px;
+  border-radius: 18px;
+  gap: 8px;
+}
+.app .mi { width: 46px; height: 46px; border-radius: 14px; }
+.app .cont,
+.app .item,
+.app .resrow { padding: 12px; border-radius: 16px; }

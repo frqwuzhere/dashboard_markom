@@ -31,23 +31,22 @@
     <nav id="rnav"></nav>
     <div class="promo"><span class="pi" id="icPromo"></span><b>Export ke Sheet</b><p>Kirim jadwal &amp; performa konten ke Google Sheet.</p><button onclick="openExport()">Export</button></div>
     <div class="nw" id="notesW"></div>
-    <div class="prof"><button class="acc-btn" id="accBtn" onclick="openAccMenu(this)"></button><button class="ib bare gearb" id="lockBtn" onclick="lockNow()" title="Kunci aplikasi" aria-label="Kunci aplikasi"></button><button class="ib bare gearb" id="setNav" onclick="go('settings')" title="Pengaturan" aria-label="Pengaturan"></button></div>
   </aside>
 
   <main class="main">
     <header class="head">
-      <button class="ib bare mob" id="accBtnM" onclick="openAccMenu()" aria-label="Ganti akun"></button>
       <div class="ttl"><h1 id="tTitle"></h1><div class="sub" id="tSub"></div></div>
       <button class="ib mob" id="modeBtnM" onclick="toggleMode()" aria-label="Ganti mode"></button>
-      <label class="search hsearch desk"><span id="icSrch"></span><input id="hq" placeholder="Cari konten…" onkeydown="hSearch(event)"></label>
       <span class="hsp"></span>
       <div class="chips desk" id="hchips"></div>
+      <button class="ib desk newb" onclick="newContent()" aria-label="Konten baru" title="Konten baru (N)"><span id="icNew"></span></button>
       <button class="ib" id="bellBtn" onclick="goOverdue()" aria-label="Konten terlambat" title="Konten terlambat"></button>
       <button class="ib desk" id="modeBtn" onclick="toggleMode()" aria-label="Ganti mode terang/gelap"></button>
       <button class="ib" id="refBtn" onclick="reload()" aria-label="Muat ulang data" title="Muat ulang"></button>
       <button class="ib desk" id="expBtnD" onclick="openExport()" aria-label="Export ke Sheet" title="Export ke Sheet"></button>
-      <button class="btn pri desk newb" onclick="newContent()" title="Konten baru (N)"><span id="icNew"></span>Konten baru</button>
+      <button class="ib" id="topSetBtn" onclick="go('settings')" aria-label="Pengaturan" title="Pengaturan"></button>
       <button class="ib mob" id="expBtnM" onclick="openExport()" aria-label="Export ke Sheet"></button>
+      <button class="profile-nav" id="profileBtn" onclick="openAccMenu(this)" aria-label="Pilih akun sosial"></button>
     </header>
     <div id="demoBox"></div>
     <section class="body" id="view"></section>

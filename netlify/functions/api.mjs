@@ -4,7 +4,7 @@ import { google } from 'googleapis';
 
 const SPREADSHEET_ID = process.env.GOOGLE_SHEET_ID || '1qQsLbwGK6WnE_KV7ysswEUHIyGdmAw9uhfafM7bowXA';
 const SCHEMA = {
-  Accounts: ['ID', 'Name', 'Handle', 'Platform', 'Color', 'TargetPerWeek', 'Notes'],
+  Accounts: ['ID', 'Name', 'Handle', 'Platform', 'AvatarUrl', 'Color', 'TargetPerWeek', 'Notes'],
   Contents: ['ID', 'AccountID', 'Date', 'Time', 'Title', 'Platform', 'Format', 'Status', 'Campaign', 'Pillar', 'Caption', 'Hashtags', 'Checklist', 'Links', 'PostLink', 'ResultLink', 'Reach', 'Likes', 'Comments', 'Shares', 'Saves', 'Notes', 'UpdatedAt', 'Views', 'ReachSrc', 'AutoMetrics', 'MetricsSrc', 'MetricsAt', 'PostedDate', 'PostedTime'],
   Campaigns: ['ID', 'AccountID', 'Name', 'StartDate', 'EndDate', 'Goal', 'Color', 'Status', 'Notes'],
   Ideas: ['ID', 'AccountID', 'Title', 'Pillar', 'Format', 'Platform', 'Priority', 'Status', 'Links', 'Notes', 'CreatedAt'],

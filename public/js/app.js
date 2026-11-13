@@ -45,6 +45,7 @@ Object.assign(P,{
  eyeoff:'<path d="M3 3l18 18M10.6 5.1A9.7 9.7 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.2 4M6.6 6.7C3.9 8.4 2 12 2 12s3.5 7 10 7c1.7 0 3.2-.4 4.4-1M9.9 9.9a3 3 0 0 0 4.2 4.2"/>',
  pin:'<path d="M12 17v5M9 3h6l-1 6 3 3v2H7v-2l3-3z"/>'
 });
+P.dashboard='<path d="M11 3.05A9 9 0 1 0 20.95 13H11V3.05ZM13 3.05V11h7.95A9 9 0 0 0 13 3.05Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>';
 const ic=(n,s=20)=>`<svg class="i" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[n]||''}</svg>`;
 
 function setNavCollapsed(collapsed){
@@ -82,6 +83,7 @@ const ISC={Baru:'#64748b',Riset:'#d97706','Siap dibuat':'#16a34a'};
 const PRC={High:'#dc2626',Medium:'#d97706',Low:'#64748b'};
 const STEPS=['Brief','Script','Produksi','Editing','Caption','Approval'];
 const ACC_COLORS=['#4f46e5','#0d9488','#e11d48','#0369a1','#7e22ce','#c2410c','#334155','#16a34a'];
+const PLATFORM_AVATARS={Instagram:'/assets/img/instagram.png',Facebook:'/assets/img/facebook-app-symbol.png',TikTok:'/assets/img/tik-tok.png',YouTube:'/assets/img/youtube.png'};
 const THEMES={account:['Warna akun',null],indigo:['Indigo','#4f46e5'],emerald:['Emerald','#059669'],rose:['Rose','#e11d48'],ocean:['Ocean','#1470ff'],grape:['Grape','#7e22ce'],amber:['Amber','#c2410c'],slate:['Slate','#334155']};
 const pad=n=>String(n).padStart(2,'0');
 const ymd=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
@@ -206,6 +208,10 @@ const scoped=(arr,shared)=>isAll()?arr:arr.filter(x=>x.AccountID===S.acc||(share
 const defAcc=()=>isAll()?(S.data.accounts[0]||{}).ID||'':S.acc;
 function avatar(a,cls=''){
   if(!a)return`<span class="av all ${cls}" aria-hidden="true">${ic('users',cls==='sm'?13:16)}</span>`;
+  const image=String(a.AvatarUrl||PLATFORM_AVATARS[a.Platform]||'').trim();
+  const imageSrc=logoCandidates_(image)[0];
+  if(imageSrc&&(/^https:\/\//i.test(imageSrc)||/^\/assets\/img\//i.test(imageSrc)||/^data:image\/(?:jpeg|png|webp|gif);base64,/i.test(imageSrc)))
+    return`<span class="av has-image ${cls}" style="--c:${esc(a.Color||'#4f46e5')}"><img src="${esc(imageSrc)}" alt="" loading="lazy"></span>`;
   return`<span class="av ${cls}" style="--c:${esc(a.Color||'#4f46e5')}">${esc(initials(a.Name))}</span>`;
 }
 function switchAcc(id){
@@ -218,11 +224,12 @@ function accMenuHTML(){
   const cnt=id=>S.data.contents.filter(c=>c.AccountID===id&&c.Date>=TODAY&&c.Status!=='Published').length;
   return`<div class="menu">${list.map(a=>`<button onclick="switchAcc('${a.ID}')">${avatar(a)}<span class="t">${esc(a.Name)}<span>${esc(a.Handle||a.Platform||'')} · ${cnt(a.ID)} mendatang</span></span>${S.acc===a.ID?ic('check',18):''}</button>`).join('')}
     ${list.length>1?`<button onclick="switchAcc('all')">${avatar(null)}<span class="t">Semua akun<span>Gabungan ${list.length} akun</span></span>${isAll()?ic('check',18):''}</button>`:''}
-    <hr><button onclick="closePop();closeSheet();openEntity('Accounts')">${ic('plus')}<span class="t">Tambah akun</span></button>
+    <hr><button onclick="closePop();closeSheet();lockNow()">${ic('lock')}<span class="t">Kunci aplikasi</span></button>
+    <button onclick="closePop();closeSheet();openEntity('Accounts')">${ic('plus')}<span class="t">Tambah akun</span></button>
     <button onclick="go('accounts')">${ic('users')}<span class="t">Kelola akun</span></button></div>`;
 }
 function openAccMenu(btn){
-  if(isMob()||!btn){openSheet(`<div class="grab"></div><div class="sh-h"><h3>Pilih akun</h3><button class="ib bare" onclick="closeSheet()" aria-label="Tutup">${ic('x')}</button></div><div class="sh-b">${accMenuHTML()}</div>`,'narrow');return}
+  if(isMob()||!btn){openSheet(`<div class="grab"></div><div class="sh-h"><h3>Pilih akun sosial</h3><button class="ib bare" onclick="closeSheet()" aria-label="Tutup">${ic('x')}</button></div><div class="sh-b">${accMenuHTML()}</div>`,'narrow');return}
   const p=$('#pop');if(p.classList.contains('open')&&p.dataset.k==='acc')return closePop();
   const r=btn.getBoundingClientRect();
   p.innerHTML=accMenuHTML();p.dataset.k='acc';p.style.left='12px';p.style.top='12px';p.classList.add('open');
@@ -233,7 +240,29 @@ function openAccMenu(btn){
   p.style.left=left+'px';p.style.top=top+'px';
 }
 function closePop(){$('#pop').classList.remove('open');$('#fab').classList.remove('open')}
-document.addEventListener('click',e=>{if(!e.target.closest('#pop')&&!e.target.closest('#accBtn')&&!e.target.closest('#fab'))closePop()});
+document.addEventListener('click',e=>{if(!e.target.closest('#pop')&&!e.target.closest('#profileBtn')&&!e.target.closest('#fab'))closePop()});
+
+const navTooltip=document.createElement('div');
+navTooltip.className='nav-tooltip';navTooltip.setAttribute('role','tooltip');navTooltip.setAttribute('aria-hidden','true');
+document.body.appendChild(navTooltip);
+function showNavTooltip(button){
+  if(!document.querySelector('#app.nav-collapsed')||!button)return;
+  navTooltip.textContent=button.dataset.tooltip||button.getAttribute('aria-label')||'';
+  if(!navTooltip.textContent)return;
+  navTooltip.classList.remove('left');
+  navTooltip.classList.add('visible');navTooltip.setAttribute('aria-hidden','false');
+  const rect=button.getBoundingClientRect(),tip=navTooltip.getBoundingClientRect();
+  const onRight=document.documentElement.dataset.side==='right';
+  const left=onRight?rect.left-tip.width-9:rect.right+9;
+  navTooltip.classList.toggle('left',onRight);
+  navTooltip.style.left=`${Math.max(8,Math.min(left,innerWidth-tip.width-8))}px`;
+  navTooltip.style.top=`${Math.max(8,Math.min(rect.top+rect.height/2-tip.height/2,innerHeight-tip.height-8))}px`;
+}
+function hideNavTooltip(){navTooltip.classList.remove('visible');navTooltip.setAttribute('aria-hidden','true')}
+document.addEventListener('pointerover',e=>{const button=e.target.closest('#rnav .navi');if(button)showNavTooltip(button)});
+document.addEventListener('pointerout',e=>{if(e.target.closest('#rnav .navi')&&!e.relatedTarget?.closest('#rnav .navi'))hideNavTooltip()});
+document.addEventListener('focusin',e=>{const button=e.target.closest('#rnav .navi');if(button)showNavTooltip(button)});
+document.addEventListener('focusout',e=>{if(e.target.closest('#rnav .navi'))hideNavTooltip()});
 
 /* ======================= Tema ======================= */
 const mq=matchMedia('(prefers-color-scheme: dark)');
@@ -252,11 +281,11 @@ function toggleMode(){setPref('mode',document.documentElement.dataset.mode==='da
 
 /* ======================= Navigasi ======================= */
 const VIEWS={
-  dashboard:['Beranda','home'],content:['Konten','calendar'],campaign:['Campaign','flag'],
+  dashboard:['Beranda','home'],dashboardView:['Dashboard','dashboard'],content:['Konten','calendar'],campaign:['Campaign','flag'],
   ideas:['Idea Bank','bulb'],resources:['Resources','folder'],analytics:['Analytics','chart'],
   accounts:['Akun','users'],settings:['Pengaturan','gear']
 };
-const RNAV=[['Rencana',['dashboard','content','campaign']],['Bahan',['ideas','resources']],['Laporan',['analytics','accounts']]];
+const RNAV=[['Rencana',['dashboard','content','campaign']],['Bahan',['ideas','resources']],['Laporan',['analytics','dashboardView','accounts']]];
 const BNAV=[['dashboard','Beranda'],['content','Konten'],['ideas','Ide'],['more','Menu']];
 /* ===== LOGO =====
  Ganti gambar logo: isi LOGO_SRC di bawah ini, ATAU isi di Pengaturan > Profil > "Logo (URL gambar)".
@@ -273,6 +302,7 @@ function logoIds_(u){
 function logoCandidates_(u){
   u=String(u||'').trim();if(!u)return [];
   if(/^data:image\//i.test(u))return [u];
+  if(/^\/assets\/img\/[\w.-]+\.(?:png|jpe?g|webp|gif)$/i.test(u))return [u];
   const id=logoIds_(u);
   if(id)return ['https://lh3.googleusercontent.com/d/'+id+'=w256','https://drive.google.com/thumbnail?id='+id+'&sz=w256','https://drive.google.com/uc?export=view&id='+id];
   return /^https?:\/\//i.test(u)?[u]:[];
@@ -296,11 +326,10 @@ function applyLogo(){
 }
 function chrome(){
   $('#icPromo').innerHTML=ic('sheet',22);
-  $('#icSrch').innerHTML=ic('search',16);$('#bellBtn').innerHTML=ic('bell',20)+'<i class="bdot" id="bellDot"></i>';
+  $('#bellBtn').innerHTML=ic('bell',20)+'<i class="bdot" id="bellDot"></i>';
   $('#icNew').innerHTML=ic('plus',18);
   $('#refBtn').innerHTML=ic('refresh');$('#expBtnM').innerHTML=ic('sheet');$('#fab').innerHTML=ic('plus',26);
-  $('#setNav').innerHTML=ic('gear',20);$('#expBtnD').innerHTML=ic('sheet',20);applyLogo();
-  $('#lockBtn').innerHTML=ic('lock',19);
+  $('#expBtnD').innerHTML=ic('sheet',18);$('#topSetBtn').innerHTML=ic('gear',18);applyLogo();
   $('#bnav').innerHTML=BNAV.map(([v,l])=>`${v==='ideas'?'<i class="bsp"></i>':''}<button data-v="${v}" onclick="${v==='more'?'openMore()':`go('${v}')`}"><span class="pi">${ic(v==='more'?'more':VIEWS[v][1],22)}</span>${l}</button>`).join('');
 }
 function go(v){S.view=v;store.set('cp2_view',v);S.picked.clear();closeSheet();closePop();render();$('#view').scrollTop=0}
@@ -328,22 +357,25 @@ function render(){
   const v=S.view,a=curAcc(),st=S.data.settings||{};
   $('#appName').textContent=st.AppName||'Content Planner';
   $('#ownerLbl').textContent='by '+(st.Owner||'Tim Kreatif');
-  const accHTML=`${avatar(a)}<span class="t"><b>${esc(a?a.Name:'Semua akun')}</b><span>${esc(a?(a.Handle||a.Platform):S.data.accounts.length+' akun')}</span></span><span class="chev">${ic('updown',16)}</span>`;
-  $('#accBtn').innerHTML=accHTML;$('#accBtnM').innerHTML=avatar(a);
+  const accHTML=avatar(a,'sm');
+  $('#profileBtn').innerHTML=accHTML;
+  $('#profileBtn').title=a?`${a.Name} · ${a.Platform||'Akun sosial'}`:'Pilih akun sosial';
+  $('#profileBtn').setAttribute('aria-label',a?`Akun sosial: ${a.Name}, ${a.Platform||''}`:'Pilih akun sosial');
   $('#tTitle').textContent=VIEWS[v][0];
   $('#tSub').innerHTML=a?`<i class="adot" style="--c:${esc(a.Color)}"></i>${esc(a.Name)} <span class="muted">${esc(a.Handle||'')}</span>`:`<i class="adot" style="--c:var(--ink3)"></i>Semua akun`;
-  if(v==='dashboard'){$('#tTitle').textContent='Halo, '+(st.CreatorName||'Creator')+',';$('#tSub').textContent=(st.CreatorRole||'Creator')}
+  $('#tSub').style.display='none';
   renderNotesW();
   const up=scoped(S.data.contents).filter(c=>c.Date>=TODAY&&c.Status!=='Published').length;
   const counts={content:up,ideas:scoped(S.data.ideas).length};
-  $('#rnav').innerHTML=RNAV.map(([g,items])=>items.map(k=>`<button class="navi ${k===v?'active':''}" onclick="go('${k}')" title="${VIEWS[k][0]}">${ic(VIEWS[k][1])}<span>${VIEWS[k][0]}</span>${counts[k]?`<span class="cnt">${counts[k]}</span>`:''}</button>`).join('')).join('');
-  $('#setNav').classList.toggle('active',v==='settings');
-  $('.hsearch').style.display=v==='content'?'none':'';
+  $('#rnav').innerHTML=RNAV.map(([g,items])=>items.map(k=>{
+    const label=VIEWS[k][0],icon=VIEWS[k][1];
+    return`<button class="navi ${k===v?'active':''}" onclick="go('${k}')" aria-label="${label}" data-tooltip="${label}">${ic(icon)}<span>${label}</span>${counts[k]?`<span class="cnt">${counts[k]}</span>`:''}</button>`;
+  }).join('')).join('');
   $('#hchips').replaceChildren();
   $('#bellDot').style.display=scoped(S.data.contents).some(overdue)?'block':'none';
-  $$('#bnav button').forEach(b=>b.classList.toggle('active',b.dataset.v===v||(b.dataset.v==='more'&&['campaign','resources','accounts','settings'].includes(v))));
+  $$('#bnav button').forEach(b=>b.classList.toggle('active',b.dataset.v===v||(b.dataset.v==='more'&&['dashboardView','campaign','resources','accounts','settings'].includes(v))));
   applyLogo();
-  $('#view').innerHTML=!S.ready?vWait():({dashboard:vDash,content:vContent,campaign:vCampaign,ideas:vIdeas,resources:vResources,analytics:vAnalytics,accounts:vAccounts,settings:vSettings})[v]();
+  $('#view').innerHTML=!S.ready?vWait():({dashboard:vDash,dashboardView:()=>'',content:vContent,campaign:vCampaign,ideas:vIdeas,resources:vResources,analytics:vAnalytics,accounts:vAccounts,settings:vSettings})[v]();
   if(v==='content'&&S.cmode==='calendar'&&!isMob())bindDnD();
 }
 
@@ -569,7 +601,6 @@ function statCard(c,icn,val,label,sub,pct,vsTxt,tr){
 }
 function goOverdue(){S.cmode='list';S.range='overdue';store.set('cp2_cmode','list');go('content')}
 function goDrafts(){S.f.status='Draft';S.cmode='list';S.range='all';store.set('cp2_cmode','list');go('content')}
-function hSearch(e){if(e.key!=='Enter')return;S.f.q=e.target.value;S.cmode='list';S.range='all';store.set('cp2_cmode','list');go('content')}
 function goStatus(s){S.f.status=s;S.cmode='list';S.range='all';store.set('cp2_cmode','list');go('content')}
 function calcStreak(all){const pub=new Set(all.filter(c=>c.Status==='Published').map(c=>c.Date));let d=pub.has(TODAY)?TODAY:addD(TODAY,-1),n=0;while(pub.has(d)){n++;d=addD(d,-1)}return n}
 const ART=`<svg class="art" viewBox="0 0 560 310" preserveAspectRatio="xMaxYMax meet" style="overflow:visible" aria-hidden="true">
@@ -630,7 +661,7 @@ function vDash(){
     <div class="pgt"><small>${isAll()?'Semua akun':esc(curAcc().Name)}</small><h2>Progres Konten ${bln}</h2><p><em>${mDone}</em> dari ${mTot} konten <span>tayang</span></p><div class="pgb"><i style="width:${mp}%"></i></div><div class="pgs">${sub}</div></div>
     <button class="pgo" onclick="${nextC?`openEntity('Contents','${nextC.ID}')`:'newContent()'}">${nextC?'Lanjutkan Bekerja':'Buat Konten Baru'}<span>${ic('right',18)}</span></button></div>`;
   const upc=all.filter(c=>c.Date>=TODAY&&c.Status!=='Published').length;
-  const MT=[['content','calendar','Konten',upc,'#1f6feb'],['campaign','flag','Campaign',0,'#ea580c'],['ideas','bulb','Idea Bank',scoped(S.data.ideas).length,'#d97706'],['resources','folder','Resources',0,'#0d9488'],['analytics','chart','Analytics',0,'#7e22ce'],['accounts','users','Akun',0,'#e11d48'],['export','sheet','Export Sheet',0,'#16a34a'],['notes','note','Catatan',noteVis().length,'#f5b400']];
+  const MT=[['content','calendar','Konten',upc,'#1f6feb'],['campaign','flag','Campaign',0,'#ea580c'],['ideas','bulb','Idea Bank',scoped(S.data.ideas).length,'#d97706'],['resources','folder','Resources',0,'#0d9488'],['analytics','chart','Analytics',0,'#7e22ce'],['dashboardView','dashboard','Dashboard',0,'#16a34a'],['accounts','users','Akun',0,'#e11d48']];
   const menu=`<div class="mg">${MT.map(([k,i,l,n,c])=>`<button class="mt ${k==='content'?'hl':''}" onclick="${k==='export'?'openExport()':k==='notes'?'openNotes()':`go('${k}')`}"><span class="mi" style="--c:${c}">${ic(i,26)}${n?`<i class="mb">${n}</i>`:''}</span><b>${l}</b></button>`).join('')}</div>`;
   /* lanjutkan */
   let cont;
@@ -885,6 +916,7 @@ const ENT={
     {k:'Title',l:'Judul',full:1,req:1},{...ACC_FIELD,shared:1},{k:'Category',l:'Kategori'},{k:'Url',l:'Link',t:'url',full:1},{k:'Notes',l:'Catatan',t:'textarea',full:1}]},
   Accounts:{key:'accounts',name:'akun',def:()=>({Platform:'Instagram',Color:ACC_COLORS[S.data.accounts.length%ACC_COLORS.length],TargetPerWeek:3}),fields:[
     {k:'Name',l:'Nama akun / brand',full:1,req:1},{k:'Handle',l:'Username',ph:'@namaakun'},{k:'Platform',l:'Platform utama',t:'select',o:PLATFORMS},
+    {k:'AvatarUrl',l:'Foto akun (upload atau URL gambar)',t:'image',full:1},
     {k:'Color',l:'Warna akun',t:'color'},{k:'TargetPerWeek',l:'Target posting / minggu',t:'number'},{k:'Notes',l:'Catatan',t:'textarea',full:1}]}
 };
 const linkRow=(l={})=>`<div class="lrow"><input class="in" data-l="label" placeholder="Label (opsional)" value="${esc(l.label||'')}"><input class="in" data-l="url" type="url" inputmode="url" placeholder="https://…" value="${esc(l.url||'')}" onchange="autoLabel(this)"><button type="button" class="ib sm" onclick="this.parentElement.remove()" aria-label="Hapus link">${ic('x',15)}</button></div>`;
@@ -906,6 +938,7 @@ function fieldHTML(f,rec){
   if(f.sec)return`<div class="fsec">${f.sec}</div>`;
   if(f.t==='copy')return`<div class="f full" style="flex-direction:row"><button type="button" class="btn sm" onclick="copyCaption()">${ic('copy',15)}Salin caption + hashtag</button></div>`;
   const v=rec[f.k]??'',id='f_'+f.k,lab=`<label for="${id}">${esc(f.l||f.k)}${f.req?' *':''}</label>`,cls=`f ${f.full?'full':''}`;
+  if(f.t==='image')return`<div class="${cls}">${lab}<div class="avatar-field"><div class="avatar-preview" id="avatarPreview">${avatar({Name:rec.Name||'Akun',Color:rec.Color||'#4f46e5',AvatarUrl:v,Platform:rec.Platform},'lg')}</div><div class="avatar-inputs"><input class="in" id="${id}" data-k="${f.k}" type="url" inputmode="url" placeholder="https://… atau link gambar Google Drive" value="${esc(v)}" oninput="previewAccountAvatar(this.value)"><label class="btn sm avatar-upload" for="avatarFile">${ic('image',15)}Upload gambar</label><input id="avatarFile" class="avatar-file" type="file" accept="image/*" onchange="uploadAccountAvatar(this)"><span class="hint">Gambar otomatis diperkecil agar tersimpan di Google Sheets.</span></div></div></div>`;
   if(f.t==='account'){
     if(S.data.accounts.length<2&&!f.shared)return`<input type="hidden" data-k="AccountID" value="${esc(v||defAcc())}">`;
     return`<div class="${cls}">${lab}<select class="in" id="${id}" data-k="${f.k}" onchange="accFieldChange()">${f.shared?`<option value="" ${!v?'selected':''}>Bersama (semua akun)</option>`:''}${S.data.accounts.map(a=>`<option value="${a.ID}" ${a.ID===v?'selected':''}>${esc(a.Name)}</option>`).join('')}</select></div>`;
@@ -916,6 +949,37 @@ function fieldHTML(f,rec){
   if(f.t==='textarea')return`<div class="${cls}">${lab}<textarea class="in" id="${id}" data-k="${f.k}">${esc(v)}</textarea></div>`;
   return`<div class="${cls}">${lab}<input class="in" id="${id}" data-k="${f.k}" type="${f.t||'text'}" ${f.t==='number'?'inputmode="numeric" min="0"':''} ${f.ph?`placeholder="${esc(f.ph)}"`:''} value="${esc(v)}"></div>`;
 }
+function previewAccountAvatar(value){
+  const preview=$('#avatarPreview');if(!preview)return;
+  const name=$('#f_Name')?.value||'Akun',color=$('#f_Color')?.value||'#4f46e5';
+  preview.innerHTML=avatar({Name:name,Color:color,AvatarUrl:value,Platform:$('#f_Platform')?.value},'lg');
+}
+async function uploadAccountAvatar(input){
+  const file=input.files&&input.files[0];if(!file)return;
+  if(!file.type.startsWith('image/')){toast('Pilih file gambar');input.value='';return}
+  try{
+    const image=await new Promise((resolve,reject)=>{
+      const reader=new FileReader();
+      reader.onerror=()=>reject(new Error('Gambar tidak dapat dibaca'));
+      reader.onload=()=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>reject(new Error('Format gambar tidak didukung'));img.src=reader.result};
+      reader.readAsDataURL(file);
+    });
+    const canvas=document.createElement('canvas');
+    let scale=Math.min(1,256/Math.max(image.naturalWidth,image.naturalHeight)),data='';
+    const supportsWebp=canvas.toDataURL('image/webp').startsWith('data:image/webp');
+    for(let attempt=0;attempt<5;attempt++){
+      canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));
+      canvas.getContext('2d').drawImage(image,0,0,canvas.width,canvas.height);
+      if(supportsWebp){
+        for(let quality=.86;quality>=.46;quality-=.1){data=canvas.toDataURL('image/webp',quality);if(data.length<=45000)break}
+      }else data=canvas.toDataURL('image/png');
+      if(data.length<=45000)break;
+      scale*=.72;
+    }
+    if(data.length>45000)throw new Error('Gambar terlalu besar. Coba gambar lain yang lebih sederhana.');
+    const field=$('#f_AvatarUrl');field.value=data;previewAccountAvatar(data);
+  }catch(error){toast(error.message||'Gambar tidak dapat dibaca')}finally{input.value=''}
+}
 function collect(){
   const v={};
   $$('#ef [data-k]').forEach(el=>{
@@ -925,7 +989,7 @@ function collect(){
     else if(el.type==='number')v[k]=el.value===''?'':Number(el.value);
     else v[k]=el.value.trim();
   });
-  ['PostLink','ResultLink','Url'].forEach(k=>{if(v[k])v[k]=normUrl(v[k])});
+  ['PostLink','ResultLink','Url','AvatarUrl'].forEach(k=>{if(v[k]&&!/^data:image\//i.test(v[k]))v[k]=normUrl(v[k])});
   return v;
 }
 function accFieldChange(){
@@ -1065,13 +1129,13 @@ function openMore(){
   <div class="sh-b"><div class="menu">
     <button onclick="openAccMenu()">${avatar(curAcc(),'sm')}<span class="t">Ganti akun<span>${esc(curAcc()?curAcc().Name:'Semua akun')}</span></span></button><hr>
     <button onclick="go('analytics')">${ic('chart')}<span class="t">Analytics</span></button>
+    <button onclick="go('dashboardView')">${ic('dashboard')}<span class="t">Dashboard</span></button>
     <button onclick="openNotes()">${ic('note')}<span class="t">Catatan</span></button>
     <button onclick="go('campaign')">${ic('flag')}<span class="t">Campaign</span></button>
     <button onclick="go('resources')">${ic('folder')}<span class="t">Resources</span></button>
     <button onclick="go('accounts')">${ic('users')}<span class="t">Kelola akun</span></button>
     <button onclick="openExport()">${ic('sheet')}<span class="t">Export ke Sheet</span></button>
-    <button onclick="go('settings')">${ic('palette')}<span class="t">Tema & pengaturan</span></button>
-    <button onclick="closeSheet();lockNow()">${ic('lock')}<span class="t">Kunci aplikasi</span></button></div></div>`,'narrow');
+    <button onclick="go('settings')">${ic('palette')}<span class="t">Tema & pengaturan</span></button></div></div>`,'narrow');
 }
 let tT,tFn;
 function toast(msg,o={}){
@@ -1092,7 +1156,7 @@ document.addEventListener('keydown',e=>{
   else if(k==='i'){e.preventDefault();openEntity('Ideas')}
   else if(k==='/'){e.preventDefault();if(S.view!=='content')go('content');setTimeout(()=>$('#q')?.focus(),30)}
   else if(k==='c'&&S.view==='content')setCMode(S.cmode==='calendar'?'list':'calendar');
-  else if(k==='a')openAccMenu(isMob()?null:$('#accBtn'));
+  else if(k==='a')openAccMenu(isMob()?null:$('#profileBtn'));
   else if((k==='arrowleft'||k==='arrowright')&&['content','analytics'].includes(S.view))shiftMonth(k==='arrowleft'?-1:1);
 });
 let tx=0,ty=0;
