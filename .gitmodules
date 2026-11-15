@@ -1,0 +1,3 @@
+[submodule "references/modern-web-guidance"]
+	path = references/modern-web-guidance
+	url = https://github.com/GoogleChrome/modern-web-guidance.git
