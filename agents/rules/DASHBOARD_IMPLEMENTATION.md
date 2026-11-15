@@ -4,8 +4,7 @@
 
 - Existing repository: https://github.com/frqwuzhere/dashboard_markom
 - Visual reference: https://github.com/Daymychen/art-design-pro
-- Social analytics spreadsheet: https://docs.google.com/spreadsheets/d/1Baza-FhKcfIFJujwYohv6aOihVV0XC416-POe--8w-g/edit
-- Based on uploaded repository archive commit `fe6486e34d5d914b997860a19e8121bd5b5eb96f`, latest provided Master/Audience Apps Script files, and user's confirmation that Google Sheets is ready. Verify the live checkout and headers before editing. The live post-ETL sheet has not been re-audited for this brief.
+- Based on uploaded repository archive commit ``, latest provided Master/Audience Apps Script files, and user's confirmation that Google Sheets is ready. Verify the live checkout and headers before editing. The live post-ETL sheet has not been re-audited for this brief.
 - Goal: deliver working Social Media Dashboard MVP. No redesign of other menus and no additional API collection work. Python backfill is out of scope.
 
 ## 2. Production architecture
@@ -57,7 +56,6 @@ tests/social-metrics.test.mjs             # synthetic fixtures
 Set server-only Netlify variable:
 
 ```dotenv
-GOOGLE_SOCIAL_SHEET_ID=1Baza-FhKcfIFJujwYohv6aOihVV0XC416-POe--8w-g
 ```
 
 Reuse existing Google service account credentials through `GOOGLE_SERVICE_ACCOUNT_EMAIL` and `GOOGLE_PRIVATE_KEY`, or local `GOOGLE_APPLICATION_CREDENTIALS` as supported by existing app. Share analytics spreadsheet with service account as Viewer. Prefer a read-only Sheets OAuth scope for the social reader, without changing planner write access. Existing API_TOKEN_SECRET remains unchanged. Missing analytics configuration must return a clear sanitized error; do not fall back to planner spreadsheet. Never publish spreadsheet or credentials to browser.

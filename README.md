@@ -7,13 +7,12 @@ Content Planner adalah aplikasi vanilla HTML/CSS/JavaScript dengan Netlify Funct
 ```text
 public/ (HTML, CSS, browser JavaScript, vendored UI libraries)
   -> /.netlify/functions/api (authenticated API)
-     -> API action dispatcher and session auth
-        -> Planner Sheets store (read/write)
+     -> Google Sheets client (shared credential loading, caller-scoped OAuth)
+        -> Planner operations (read/write)
         -> Social analytics reader (read-only)
-     -> Shared Google Sheets client (server credentials, caller-scoped OAuth)
 ```
 
-`public/` adalah deploy root statis. `netlify/functions/api.mjs` menangani HTTP request dan response; routing action ada di `dispatch-action.mjs`. Signing dan validasi sesi ada di `session-auth.mjs`. Schema planner dan operasi CRUD Google Sheets ada di `planner-store.mjs`. Credential handling terpusat di `google-sheets-client.mjs`, sementara setiap pemanggil menentukan OAuth scope. Normalisasi, agregasi, dan pembacaan analytics read-only ada di `social-metrics.mjs`. Spreadsheet planner dan analytics tetap terpisah. Apps Script dan workbook contoh adalah referensi, bukan runtime deployment.
+`public/` adalah deploy root statis. API orchestration berada di `netlify/functions/api.mjs`. Shared credential handling is in `netlify/functions/lib/google-sheets-client.mjs`; OAuth scopes are selected by each caller. Normalisasi dan agregasi metrik sosial berada di `netlify/functions/lib/social-metrics.mjs`. Spreadsheet analytics berbeda dari spreadsheet planner dan harus tetap read-only. Apps Script dan workbook contoh adalah referensi lama, bukan runtime deployment.
 
 ## File utama
 
@@ -27,15 +26,10 @@ public/ (HTML, CSS, browser JavaScript, vendored UI libraries)
 - `public/js/app-actions.js` — ekspor, aksi cepat, toast, dan interaksi umum.
 - `public/js/app-bootstrap.js` — keyboard, akses/kunci, catatan, pemuatan data, dan inisialisasi.
 - `public/js/social-dashboard.js` — dashboard media sosial dan lifecycle grafik.
-- `public/js/api-client.js` — transport API POST berautentikasi yang dipakai browser.
 - `public/css/social-dashboard.css` — style dashboard media sosial.
-- `netlify/functions/api.mjs` — HTTP handler untuk Netlify Function.
-- `netlify/functions/lib/dispatch-action.mjs` — action routing and application-level authorization.
+- `netlify/functions/api.mjs` — API, autentikasi, operasi spreadsheet planner, dan dispatch dashboard sosial.
 - `netlify/functions/lib/google-sheets-client.mjs` — pembuatan Sheets client dari server-side credentials dengan scopes dari caller.
-- `netlify/functions/lib/planner-store.mjs` — schema, reads, writes, and batched planner spreadsheet operations.
-- `netlify/functions/lib/session-auth.mjs` — legacy access-code hash and signed-session helpers.
 - `netlify/functions/lib/social-metrics.mjs` — normalisasi, agregasi, serta pembacaan analytics sosial read-only.
-- `scripts/check-syntax.mjs` — pemeriksaan sintaks seluruh source JavaScript aplikasi.
 - `Kode.js` — referensi Apps Script lama (diabaikan Git).
 - `agents/rules/` — konteks proyek dan kontrak data/perilaku dashboard.
 - `references/modern-web-guidance/` — Git submodule yang dipin.
@@ -67,7 +61,7 @@ git add references/modern-web-guidance
 ## Menjalankan lokal
 
 1. Buat Google Cloud service account dan aktifkan Google Sheets API.
-2. Bagikan spreadsheet `1qQsLbwGK6WnE_KV7ysswEUHIyGdmAw9uhfafM7bowXA` sebagai **Editor** ke email service account. Pastikan sheet dapat diakses oleh akun tersebut.
+2. Bagikan spreadsheet `` sebagai **Editor** ke email service account. Pastikan sheet dapat diakses oleh akun tersebut.
 3. Jalankan `npm ci`.
 4. Salin `.env.example` menjadi `.env`. Untuk lokal, `GOOGLE_APPLICATION_CREDENTIALS` dapat menunjuk ke file JSON Service Account di luar repository. Untuk deployment, masukkan `GOOGLE_SERVICE_ACCOUNT_EMAIL`, `GOOGLE_PRIVATE_KEY`, dan `API_TOKEN_SECRET` di Netlify → Site configuration → Environment variables (jangan upload file JSON ke frontend atau repository):
    - `GOOGLE_SHEET_ID` — ID spreadsheet.
@@ -80,7 +74,6 @@ git add references/modern-web-guidance
 
 ## Testing
 
-- `npm run check` memeriksa sintaks backend dan browser JavaScript.
 - `npm test` menjalankan tes unit backend menggunakan Node.js test runner.
 - Tes E2E/browser belum disiapkan; direncanakan untuk tahap berikutnya.
 

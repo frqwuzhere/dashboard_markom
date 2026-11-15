@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "netlify dev",
     "test": "node --test tests/*.test.mjs",
-    "check": "node scripts/check-syntax.mjs"
+    "check": "node --check netlify/functions/api.mjs && node --check netlify/functions/lib/google-sheets-client.mjs && node --check netlify/functions/lib/social-metrics.mjs"
   },
   "dependencies": {
     "googleapis": "^189.0.0"

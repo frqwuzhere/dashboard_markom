@@ -30,27 +30,27 @@ The deployed application is operational. The planner backend uses Netlify Functi
 - Preserve the existing working application and migrate incrementally.
 - Do not assume a database migration is immediately necessary.
 
-## 4. Current operating choices
+## 4. Options discussed
 
 ### Hosting and deployment platforms
 
 | Platform | Frontend hosting | Backend capability | Notes |
 |---|---|---|---|
-| Netlify | Current | Netlify Functions | Hosts the static frontend and serverless API in this repository. |
+| Netlify | Yes | Netlify Functions | Supports serverless JavaScript/TypeScript functions; suitable for a simple integrated frontend + functions workflow. |
 | Vercel | Yes | Vercel Functions | Supports serverless functions and modern frontend frameworks. |
 | GitHub Pages | Yes | No server-side backend | Static hosting only; backend must be hosted elsewhere. |
 
-Netlify is the current deployment configuration (`netlify.toml`). Reassess only if a concrete requirement or cost/plan limit calls for it.
+Netlify is the tentative preference for simplicity, but this is not a final decision. Check current plan limits, pricing, and commercial-use terms before production deployment.
 
 ### Backend approaches
 
-1. **Keep Apps Script as reference/ETL:** Apps Script remains responsible for external social analytics collection and ETL; it is not the website CRUD API.
-2. **Serverless backend (current):** Netlify Functions provide the authenticated CRUD API and social analytics read endpoint, using Google Sheets API.
+1. **Keep Apps Script:** Move the frontend to Netlify/Vercel while Apps Script continues to provide the API and access Google Sheets.
+2. **Serverless backend:** Move CRUD and business logic into Netlify Functions (or Vercel Functions), while retaining Google Sheets through the Google Sheets API.
 3. **Conventional Node.js server:** Use Express/Fastify on a separate hosting service or VPS. This provides a persistent server and more runtime control, but adds operational responsibilities.
 
-The current implementation uses approach 2. A conventional server is not currently necessary unless requirements such as long-running processes, persistent connections, or background workers emerge.
+Given the current requirements and the user's simplicity priority, the tentative recommendation is approach 2, with a gradual migration. A conventional server is not currently necessary unless requirements such as long-running processes, persistent connections, or background workers emerge.
 
-## 5. Current architecture
+## 5. Tentative target architecture
 
 ```text
 GitHub repository
@@ -81,9 +81,9 @@ PostgreSQL / Supabase
 
 PostgreSQL/Supabase is a future option, not a requirement for the first migration stage.
 
-## 6. Refactor strategy
+## 6. Suggested migration strategy
 
-### Preserve first
+### Stage 0 — Audit the existing application
 
 Before changing anything, inspect:
 - Current repository and file/folder structure.
@@ -93,14 +93,23 @@ Before changing anything, inspect:
 - Google Sheets structure, sheet names, columns, and relationships.
 - Current deployment and configuration.
 
-- Preserve browser behavior, sheet names/headers, API action names and response shapes, authentication, and social analytics read-only access.
-- Keep the vanilla stack and Netlify deployment. Do not migrate frameworks, hosting, or databases for tidiness alone.
-- Improve boundaries incrementally (HTTP handler, action dispatch, session auth, planner store, social analytics) and cover changes with synthetic tests.
-- Reassess PostgreSQL/Supabase only if Sheets creates demonstrated integrity, concurrency, query, performance, or maintenance problems.
+### Stage 1 — Separate frontend deployment
+
+Deploy the existing frontend to Netlify (or another selected static host) while keeping Apps Script as the backend and Google Sheets as the database.
+
+### Stage 2 — Replace Apps Script backend incrementally
+
+Move business logic and CRUD into JavaScript serverless functions. Use the Google Sheets API to continue reading and writing the existing spreadsheet.
+
+Map each existing GAS function to its replacement and test behavior before switching production traffic.
+
+### Stage 3 — Reassess the database
+
+Only consider PostgreSQL/Supabase if Google Sheets becomes a meaningful limitation in data integrity, concurrency, query complexity, performance, or maintainability.
 
 ## 7. Development workflow
 
-A local workflow:
+A possible local workflow:
 
 ```bash
 npm install
@@ -127,18 +136,28 @@ OpenCode can assist with editing and refactoring the project files, while VS Cod
 - The current shared-account approach can be retained temporarily if required, but backend endpoints still need access verification.
 - Consider individual accounts and authorization later if activity attribution, audit logs, or role-based access become necessary.
 
-## 9. Decisions to revisit only when requirements change
+## 9. Decisions not yet made
 
-- Whether Netlify remains the best hosting choice.
-- Whether Sheets remains adequate as storage.
-- Whether individual user authentication is needed beyond the current shared access model.
+- Final hosting provider: Netlify, Vercel, or another option.
+- Whether to keep Apps Script temporarily as the API.
+- Whether to use serverless functions or a conventional Node.js server.
+- Whether and when to migrate Google Sheets to PostgreSQL.
+- Whether to introduce individual user authentication.
 
 Do not treat the tentative architecture as a final implementation decision.
 
-## 10. Ongoing development guidance
+## 10. Next action
 
-Audit the current implementation and existing rules before changes. Prefer small, testable architecture improvements over rewrites. Never expose secrets, write to the social analytics spreadsheet, or invent data contracts.
+The user plans to share the current architecture, project structure, source code, or workflow.
+
+Once provided:
+1. Audit the existing implementation first.
+2. Identify which parts are tightly coupled to Apps Script.
+3. Map existing GAS CRUD/business logic to potential Node.js functions.
+4. Assess the Google Sheets data model and API access requirements.
+5. Recommend the smallest safe migration plan.
+6. Avoid rewriting working components without a clear reason.
 
 ---
 
-**Instruction for future conversations:** Use this file as project context. Continue from the existing Content Planner implementation; do not confuse it with the user's separate CRM/data analytics work.
+**Instruction for future conversations:** Use this file as the project context. Continue from the existing Content Planner implementation; do not confuse it with the user's separate CRM/data analytics work. Treat all architecture choices above as provisional until the current source code and architecture have been reviewed.
