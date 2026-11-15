@@ -1,6 +1,19 @@
 # Content Planner
 
-Frontend biasa (HTML/CSS/JavaScript) dengan Netlify Function sebagai backend. Google Sheets dipakai sementara; akses spreadsheet dilakukan dari backend, bukan browser. Arsitektur ini menjaga agar migrasi ke Supabase nanti cukup mengganti implementasi backend.
+Content Planner adalah aplikasi vanilla HTML/CSS/JavaScript dengan Netlify Functions (Node.js ESM) sebagai backend dan Google Sheets sebagai penyimpanan. Browser memanggil satu API backend terautentikasi; kredensial dan akses spreadsheet tetap di server.
+
+## Arsitektur
+
+```text
+public/ (HTML, CSS, browser JavaScript, vendored UI libraries)
+  -> /.netlify/functions/api (authenticated API)
+     -> API action dispatcher and session auth
+        -> Planner Sheets store (read/write)
+        -> Social analytics reader (read-only)
+     -> Shared Google Sheets client (server credentials, caller-scoped OAuth)
+```
+
+`public/` adalah deploy root statis. `netlify/functions/api.mjs` menangani HTTP request dan response; routing action ada di `dispatch-action.mjs`. Signing dan validasi sesi ada di `session-auth.mjs`. Schema planner dan operasi CRUD Google Sheets ada di `planner-store.mjs`. Credential handling terpusat di `google-sheets-client.mjs`, sementara setiap pemanggil menentukan OAuth scope. Normalisasi, agregasi, dan pembacaan analytics read-only ada di `social-metrics.mjs`. Spreadsheet planner dan analytics tetap terpisah. Apps Script dan workbook contoh adalah referensi, bukan runtime deployment.
 
 ## File utama
 
@@ -14,9 +27,18 @@ Frontend biasa (HTML/CSS/JavaScript) dengan Netlify Function sebagai backend. Go
 - `public/js/app-actions.js` — ekspor, aksi cepat, toast, dan interaksi umum.
 - `public/js/app-bootstrap.js` — keyboard, akses/kunci, catatan, pemuatan data, dan inisialisasi.
 - `public/js/social-dashboard.js` — dashboard media sosial dan lifecycle grafik.
+- `public/js/api-client.js` — transport API POST berautentikasi yang dipakai browser.
 - `public/css/social-dashboard.css` — style dashboard media sosial.
-- `netlify/functions/api.mjs` — API dan akses Google Sheets.
-- `Kode.js` — backend Apps Script lama, dipertahankan sebagai referensi.
+- `netlify/functions/api.mjs` — HTTP handler untuk Netlify Function.
+- `netlify/functions/lib/dispatch-action.mjs` — action routing and application-level authorization.
+- `netlify/functions/lib/google-sheets-client.mjs` — pembuatan Sheets client dari server-side credentials dengan scopes dari caller.
+- `netlify/functions/lib/planner-store.mjs` — schema, reads, writes, and batched planner spreadsheet operations.
+- `netlify/functions/lib/session-auth.mjs` — legacy access-code hash and signed-session helpers.
+- `netlify/functions/lib/social-metrics.mjs` — normalisasi, agregasi, serta pembacaan analytics sosial read-only.
+- `scripts/check-syntax.mjs` — pemeriksaan sintaks seluruh source JavaScript aplikasi.
+- `Kode.js` — referensi Apps Script lama (diabaikan Git).
+- `agents/rules/` — konteks proyek dan kontrak data/perilaku dashboard.
+- `references/modern-web-guidance/` — Git submodule yang dipin.
 
 Script browser dimuat berurutan melalui `defer` di `public/index.html`. Urutan ini
 mempertahankan global function yang masih dipakai oleh inline handler di HTML dan
@@ -46,16 +68,19 @@ git add references/modern-web-guidance
 
 1. Buat Google Cloud service account dan aktifkan Google Sheets API.
 2. Bagikan spreadsheet `1qQsLbwGK6WnE_KV7ysswEUHIyGdmAw9uhfafM7bowXA` sebagai **Editor** ke email service account. Pastikan sheet dapat diakses oleh akun tersebut.
-3. Jalankan `npm install`.
-4. Salin `.env.example` menjadi `.env`. Untuk lokal, `GOOGLE_APPLICATION_CREDENTIALS` dapat menunjuk ke file JSON Service Account. Untuk deployment, masukkan `GOOGLE_SERVICE_ACCOUNT_EMAIL`, `GOOGLE_PRIVATE_KEY`, dan `API_TOKEN_SECRET` di Netlify → Site configuration → Environment variables (jangan upload file JSON ke frontend atau repository):
+3. Jalankan `npm ci`.
+4. Salin `.env.example` menjadi `.env`. Untuk lokal, `GOOGLE_APPLICATION_CREDENTIALS` dapat menunjuk ke file JSON Service Account di luar repository. Untuk deployment, masukkan `GOOGLE_SERVICE_ACCOUNT_EMAIL`, `GOOGLE_PRIVATE_KEY`, dan `API_TOKEN_SECRET` di Netlify → Site configuration → Environment variables (jangan upload file JSON ke frontend atau repository):
    - `GOOGLE_SHEET_ID` — ID spreadsheet.
    - `GOOGLE_SERVICE_ACCOUNT_EMAIL` — email service account.
    - `GOOGLE_PRIVATE_KEY` — private key service account; simpan sebagai secret, jangan commit.
    - `API_TOKEN_SECRET` — nilai acak panjang untuk menandatangani sesi aplikasi.
-5. Jalankan `npm run dev`.
+5. Jalankan `npm run check`, `npm test`, lalu `npm run dev`.
+
+`.env.example` hanya berisi nama variabel dan nilai non-secret. Jangan menaruh credentials di dalamnya. File `.env`, service-account JSON, dan private keys harus tetap tidak terlacak Git.
 
 ## Testing
 
+- `npm run check` memeriksa sintaks backend dan browser JavaScript.
 - `npm test` menjalankan tes unit backend menggunakan Node.js test runner.
 - Tes E2E/browser belum disiapkan; direncanakan untuk tahap berikutnya.
 
@@ -63,6 +88,6 @@ Backend akan membuat tab dan header yang belum ada (`Accounts`, `Contents`, `Cam
 
 ## Batasan saat ini
 
-- Sinkronisasi metrik media sosial belum dipindahkan dari Apps Script.
+- Sinkronisasi dan ETL metrik media sosial tetap dimiliki proses Apps Script; website hanya membaca spreadsheet analytics.
 - Ekspor ke tab/file spreadsheet belum dipindahkan; unduh CSV masih tersedia.
 - Sebelum deployment publik, konfigurasikan secrets dan batasi akses aplikasi sesuai kebutuhan tim.

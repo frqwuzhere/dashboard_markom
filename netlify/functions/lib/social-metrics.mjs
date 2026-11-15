@@ -1,5 +1,4 @@
-import { readFile } from "node:fs/promises";
-import { google } from "googleapis";
+import { createGoogleSheetsClient } from "./google-sheets-client.mjs";
 
 const SOCIAL_SHEET_ID = process.env.GOOGLE_SOCIAL_SHEET_ID;
 const PLATFORMS = ["Instagram", "Facebook", "TikTok", "YouTube"];
@@ -598,42 +597,15 @@ export function buildDashboardResponse(
 }
 
 async function createReadOnlySheetsClient() {
-  let email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
-  let privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n");
-  if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-    try {
-      const credentials = JSON.parse(
-        await readFile(process.env.GOOGLE_APPLICATION_CREDENTIALS, "utf8"),
-      );
-      email = credentials.client_email;
-      privateKey = credentials.private_key;
-    } catch {
-      throw Object.assign(
-        new Error("Kredensial akun layanan tidak dapat dibaca."),
-        {
-          publicMessage:
-            "File kredensial lokal tidak tersedia di Netlify. Atur GOOGLE_SERVICE_ACCOUNT_EMAIL dan GOOGLE_PRIVATE_KEY pada environment Netlify.",
-        },
-      );
-    }
-  }
-  if (!email || !privateKey) {
-    throw Object.assign(
-      new Error(
-        "Konfigurasi akun layanan Google untuk dashboard belum lengkap.",
-      ),
-      {
-        publicMessage:
-          "Kredensial Google belum tersedia. Atur GOOGLE_SERVICE_ACCOUNT_EMAIL dan GOOGLE_PRIVATE_KEY pada environment Netlify.",
-      },
-    );
-  }
-  const auth = new google.auth.JWT({
-    email,
-    key: privateKey,
+  return createGoogleSheetsClient({
     scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
+    missingMessage:
+      "Konfigurasi akun layanan Google untuk dashboard belum lengkap.",
+    missingPublicMessage:
+      "Kredensial Google belum tersedia. Atur GOOGLE_SERVICE_ACCOUNT_EMAIL dan GOOGLE_PRIVATE_KEY pada environment Netlify.",
+    credentialsPublicMessage:
+      "File kredensial lokal tidak tersedia di Netlify. Atur GOOGLE_SERVICE_ACCOUNT_EMAIL dan GOOGLE_PRIVATE_KEY pada environment Netlify.",
   });
-  return google.sheets({ version: "v4", auth });
 }
 
 export async function getSocialDashboardData(request = {}) {
