@@ -3,7 +3,7 @@ import { getSocialDashboardData } from "./lib/social-metrics.mjs";
 import { createGoogleSheetsClient } from "./lib/google-sheets-client.mjs";
 
 const SPREADSHEET_ID =
-  process.env.GOOGLE_SHEET_ID || "1qQsLbwGK6WnE_KV7ysswEUHIyGdmAw9uhfafM7bowXA";
+  process.env.GOOGLE_SHEET_ID;
 const SCHEMA = {
   Accounts: [
     "ID",
