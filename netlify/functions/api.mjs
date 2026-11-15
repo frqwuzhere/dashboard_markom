@@ -148,7 +148,7 @@ function validToken(token, hash) {
 async function sheetsClient() {
   return createGoogleSheetsClient({
     missingPublicMessage:
-      "Kredensial Google belum tersedia pada environment Netlify.",
+      "Kredensial Google belum tersedia pada environment Netlify. Atur GOOGLE_SERVICE_ACCOUNT_EMAIL dan GOOGLE_PRIVATE_KEY.",
   });
 }
 function quoteSheet(name) {
@@ -434,11 +434,13 @@ export const handler = async (event) => {
     return { statusCode: 200, headers, body: JSON.stringify({ data }) };
   } catch (error) {
     const statusCode = error.statusCode || 500;
+    // Prefer sanitized messages: raw server errors must not surface on the
+    // login screen or expose infrastructure details to the browser.
     const message =
-      action === "getSocialDashboardData" && statusCode >= 500
-        ? error.publicMessage ||
-          "Data dashboard sosial gagal dibaca. Periksa konfigurasi server dan izin Viewer pada spreadsheet."
-        : error.message;
+      error.publicMessage ||
+      (action === "getSocialDashboardData" && statusCode >= 500
+        ? "Data dashboard sosial gagal dibaca. Periksa konfigurasi server dan izin Viewer pada spreadsheet."
+        : error.message);
     return { statusCode, headers, body: JSON.stringify({ error: message }) };
   }
 };

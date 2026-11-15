@@ -65,9 +65,12 @@ git add references/modern-web-guidance
 3. Jalankan `npm ci`.
 4. Salin `.env.example` menjadi `.env`. Untuk lokal, `GOOGLE_APPLICATION_CREDENTIALS` dapat menunjuk ke file JSON Service Account di luar repository. Untuk deployment, masukkan `GOOGLE_SERVICE_ACCOUNT_EMAIL`, `GOOGLE_PRIVATE_KEY`, dan `API_TOKEN_SECRET` di Netlify → Site configuration → Environment variables (jangan upload file JSON ke frontend atau repository):
    - `GOOGLE_SHEET_ID` — ID spreadsheet.
+   - `GOOGLE_SOCIAL_SHEET_ID` — ID spreadsheet analytics; spreadsheet tersebut cukup dibagikan sebagai **Viewer** ke email service account.
    - `GOOGLE_SERVICE_ACCOUNT_EMAIL` — email service account.
    - `GOOGLE_PRIVATE_KEY` — private key service account; simpan sebagai secret, jangan commit.
    - `API_TOKEN_SECRET` — nilai acak panjang untuk menandatangani sesi aplikasi.
+   - Jangan mengatur `GOOGLE_APPLICATION_CREDENTIALS` di Netlify: variabel itu hanya untuk file lokal dan berkasnya tidak ada di server Netlify. Jika `netlify env:import .env` dipakai, hapus variabel tersebut setelah impor.
+   - Jika `GOOGLE_SERVICE_ACCOUNT_EMAIL` dan `GOOGLE_PRIVATE_KEY` tersedia, keduanya selalu dipakai lebih dulu; file kredensial lokal hanya menjadi cadangan.
 5. Jalankan `npm run check`, `npm test`, lalu `npm run dev`.
 
 `.env.example` hanya berisi nama variabel dan nilai non-secret. Jangan menaruh credentials di dalamnya. File `.env`, service-account JSON, dan private keys harus tetap tidak terlacak Git.

@@ -603,8 +603,6 @@ async function createReadOnlySheetsClient() {
       "Konfigurasi akun layanan Google untuk dashboard belum lengkap.",
     missingPublicMessage:
       "Kredensial Google belum tersedia. Atur GOOGLE_SERVICE_ACCOUNT_EMAIL dan GOOGLE_PRIVATE_KEY pada environment Netlify.",
-    credentialsPublicMessage:
-      "File kredensial lokal tidak tersedia di Netlify. Atur GOOGLE_SERVICE_ACCOUNT_EMAIL dan GOOGLE_PRIVATE_KEY pada environment Netlify.",
   });
 }
 
