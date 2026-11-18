@@ -45,6 +45,15 @@ test("master normalization preserves large IDs, Facebook reactions, zeroes, and 
   assert.equal(row.interactions, 0);
 });
 
+test("master normalization includes duration seconds, preserving zero and missing values", () => {
+  const [withDuration, withoutDuration] = normalizeMasterRows([
+    makeContent("ig_duration", "Instagram", { duration_seconds: 95 }),
+    makeContent("ig_no_duration", "Instagram"),
+  ]);
+  assert.equal(withDuration.durationSeconds, 95);
+  assert.equal(withoutDuration.durationSeconds, null);
+});
+
 test("master validation rejects duplicate IDs and invalid publication dates", () => {
   assert.throws(
     () =>

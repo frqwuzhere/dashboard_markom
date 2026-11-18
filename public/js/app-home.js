@@ -202,17 +202,11 @@ function vDash() {
     pmo = inMonth(all, new Date(M.getFullYear(), M.getMonth() - 1, 1));
   const pubM = mo.filter((c) => c.Status === "Published"),
     ppub = pmo.filter((c) => c.Status === "Published");
-  const eng = (c) =>
-    ["Likes", "Comments", "Shares", "Saves"].reduce(
-      (a, k) => a + (+c[k] || 0),
-      0,
-    );
-  const sumR = (l) => l.reduce((a, c) => a + (+c.Reach || 0), 0),
-    sumE = (l) => l.reduce((a, c) => a + eng(c), 0);
-  const reach = sumR(mo),
-    preach = sumR(pmo),
-    er = reach ? (sumE(mo) / reach) * 100 : 0,
-    per = preach ? (sumE(pmo) / preach) * 100 : 0;
+  const countStatus = (list, status) =>
+    list.filter((content) => content.Status === status).length;
+  const planned = (list) => countStatus(list, "Scheduled");
+  const inProduction = (list) =>
+    countStatus(list, "Draft") + countStatus(list, "Content done");
   const ready = scoped(S.data.ideas).filter((i) => i.Status === "Siap dibuat"),
     drafts = all.filter((c) => c.Status === "Draft");
   const bln = BULAN[M.getMonth()];
@@ -231,21 +225,7 @@ function vDash() {
     RR = 40,
     CC = 2 * Math.PI * RR;
   const hero = `<div class="pgc"><div class="pgr"><svg viewBox="0 0 100 100" width="124" height="124" aria-hidden="true"><circle cx="50" cy="50" r="${RR}" fill="none" stroke="rgba(255,255,255,.28)" stroke-width="11"/><circle cx="50" cy="50" r="${RR}" fill="none" stroke="#22c55e" stroke-width="11" stroke-linecap="round" stroke-dasharray="${CC}" stroke-dashoffset="${CC * (1 - mp / 100)}" transform="rotate(-90 50 50)"/></svg><b>${mp}%</b></div>
-    <div class="pgt"><small>${isAll() ? "Semua akun" : esc(curAcc().Name)}</small><h2>Progres Konten ${bln}</h2><p><em>${mDone}</em> dari ${mTot} konten <span>tayang</span></p><div class="pgb"><i style="width:${mp}%"></i></div><div class="pgs">${sub}</div></div>
-    <button class="pgo" onclick="${nextC ? `openEntity('Contents','${nextC.ID}')` : "newContent()"}">${nextC ? "Lanjutkan Bekerja" : "Buat Konten Baru"}<span>${ic("right", 18)}</span></button></div>`;
-  const upc = all.filter(
-    (c) => c.Date >= TODAY && c.Status !== "Published",
-  ).length;
-  const MT = [
-    ["content", "calendar", "Konten", upc, "#1f6feb"],
-    ["campaign", "flag", "Campaign", 0, "#ea580c"],
-    ["ideas", "bulb", "Idea Bank", scoped(S.data.ideas).length, "#d97706"],
-    ["resources", "folder", "Resources", 0, "#0d9488"],
-    ["analytics", "chart", "Analytics", 0, "#7e22ce"],
-    ["dashboardView", "dashboard", "Dashboard", 0, "#16a34a"],
-    ["accounts", "users", "Akun", 0, "#e11d48"],
-  ];
-  const menu = `<div class="mg">${MT.map(([k, i, l, n, c]) => `<button class="mt ${k === "content" ? "hl" : ""}" onclick="${k === "export" ? "openExport()" : k === "notes" ? "openNotes()" : `go('${k}')`}"><span class="mi" style="--c:${c}">${ic(i, 26)}${n ? `<i class="mb">${n}</i>` : ""}</span><b>${l}</b></button>`).join("")}</div>`;
+    <div class="pgt"><small>${isAll() ? "Semua akun" : esc(curAcc().Name)}</small><h2>Progres Konten ${bln}</h2><p><em>${mDone}</em> dari ${mTot} konten <span>tayang</span></p><div class="pgb"><i style="width:${mp}%"></i></div><div class="pgs">${sub}</div></div></div>`;
   /* lanjutkan */
   let cont;
   if (nextC) {
@@ -289,8 +269,8 @@ function vDash() {
   const stats = `<div class="sg" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr))">
     ${statCard("#1470ff", "list", mo.length, "Total Konten", bln, mo.length ? (pubM.length / mo.length) * 100 : 0, pmo.length, pctChg(mo.length, pmo.length))}
     ${statCard("#059669", "check", pubM.length, "Published", "Sudah tayang", mo.length ? (pubM.length / mo.length) * 100 : 0, ppub.length, pctChg(pubM.length, ppub.length))}
-    ${statCard("#ea580c", "chart", cf(reach), "Total Reach", "Bulan ini", reach ? (reach / Math.max(reach, preach)) * 100 : 0, cf(preach), pctChg(reach, preach))}
-    ${statCard("#7e22ce", "target", er.toFixed(1) + "%", "Engagement Rate", "Rata-rata bulan ini", Math.min(100, er * 10), per.toFixed(1) + "%", pctChg(er, per))}</div>`;
+    ${statCard("#ea580c", "edit", inProduction(mo), "Dalam Produksi", "Draft + selesai produksi", mo.length ? (inProduction(mo) / mo.length) * 100 : 0, inProduction(pmo), pctChg(inProduction(mo), inProduction(pmo)))}
+    ${statCard("#7e22ce", "calendar", planned(mo), "Terjadwal", "Siap dipublikasikan", mo.length ? (planned(mo) / mo.length) * 100 : 0, planned(pmo), pctChg(planned(mo), planned(pmo)))}</div>`;
   const months = [2, 1, 0].map((k) => {
     const d = new Date(M.getFullYear(), M.getMonth() - k, 1),
       l = inMonth(all, d);
@@ -298,19 +278,21 @@ function vDash() {
       d,
       n: l.length,
       pub: l.filter((c) => c.Status === "Published").length,
-      r: sumR(l),
     };
   });
   const maxN = Math.max(1, ...months.map((x) => x.n)),
     pubAll = all.filter((c) => c.Status === "Published").length,
-    withC = months.filter((x) => x.n).length || 1;
-  const analytics = `<div class="pn"><div class="ph"><div><h3>Performa Bulanan</h3><p>Jumlah konten & yang sudah tayang, 3 bulan terakhir</p></div><button class="r" onclick="go('analytics')">Lihat Analytics</button></div>
-    ${months.map((x) => `<div class="mrow"><div class="mt"><b>${BULAN[x.d.getMonth()]}</b><span class="muted">· ${x.n} konten</span><span class="rt"><span class="tr">${x.pub} tayang</span><span>${cf(x.r)} reach</span></span></div><div class="mbar"><i style="width:${(x.n / maxN) * 100}%">${x.n ? Math.round((x.pub / x.n) * 100) : 0}%</i></div></div>`).join("")}
+    withC = months.filter((x) => x.n).length || 1,
+    upcoming = all.filter(
+      (c) => c.Date >= TODAY && c.Date <= addD(TODAY, 30) && c.Status !== "Published",
+    ).length;
+  const analytics = `<div class="pn"><div class="ph"><div><h3>Perencanaan Bulanan</h3><p>Jumlah konten dan progres publikasi, 3 bulan terakhir</p></div><button class="r" onclick="go('analytics')">Lihat Ringkasan Planner</button></div>
+     ${months.map((x) => `<div class="mrow"><div class="mt"><b>${BULAN[x.d.getMonth()]}</b><span class="muted">· ${x.n} konten</span><span class="rt"><span class="tr">${x.pub} tayang</span></span></div><div class="mbar"><i style="width:${(x.n / maxN) * 100}%">${x.n ? Math.round((x.pub / x.n) * 100) : 0}%</i></div></div>`).join("")}
     <div class="tiles">
       <div class="tl4" style="--c:#1470ff">${ic("list", 20)}<b>${all.length}</b><small>Total Konten</small></div>
       <div class="tl4" style="--c:#059669">${ic("check", 20)}<b>${all.length ? Math.round((pubAll / all.length) * 100) : 0}%</b><small>Rate Tayang</small></div>
       <div class="tl4" style="--c:#7e22ce">${ic("chart", 20)}<b>${Math.round(months.reduce((a, x) => a + x.n, 0) / withC)}</b><small>Rata-rata/Bulan</small></div>
-      <div class="tl4" style="--c:#ea580c">${ic("arrow", 20)}<b>${cf(sumR(all))}</b><small>Total Reach</small></div></div></div>`;
+       <div class="tl4" style="--c:#ea580c">${ic("calendar", 20)}<b>${upcoming}</b><small>Jadwal 30 hari ke depan</small></div></div></div>`;
   const recent = [...all]
     .filter((c) => c.UpdatedAt)
     .sort((a, b) => String(b.UpdatedAt).localeCompare(String(a.UpdatedAt)))
@@ -351,17 +333,15 @@ function vDash() {
         return `<span>${HARI[i]}<i class="${on ? "on" : ""} ${d === TODAY ? "td" : ""}">${on ? ic("check", 12) : ""}</i></span>`;
       })
       .join("")}</div></div>`;
-  let lead = pubM.filter((c) => +c.Reach > 0);
-  const leadLbl = lead.length ? "Bulan ini" : "Semua";
-  if (!lead.length)
-    lead = all.filter((c) => c.Status === "Published" && +c.Reach > 0);
-  lead = [...lead].sort((a, b) => b.Reach - a.Reach).slice(0, 5);
-  const board = `<div class="sd"><h3>Konten Terbaik<span class="r">${leadLbl}</span></h3>${lead.length ? lead.map((c, i) => `<div class="lbr" onclick="openEntity('Contents','${c.ID}')"><span class="rk ${i > 2 ? "n" : ""}" style="${i < 3 ? `--g:${MEDAL[i]}` : ""}">${i + 1}</span>${avatar(accById(c.AccountID), "sm")}<div class="m"><b>${esc(c.Title)}</b><small>${esc(c.Format)} · ER ${(+c.Reach ? (eng(c) / c.Reach) * 100 : 0).toFixed(1)}%</small></div><b>${cf(c.Reach)}</b></div>`).join("") : `<div class="empty" style="padding:14px 6px"><b>Belum ada data reach</b>Isi metrik di konten yang sudah published.</div>`}</div>`;
+  const lead = all
+    .filter((c) => c.Status !== "Published" && c.Date >= TODAY)
+    .sort(sortDT)
+    .slice(0, 5);
+  const board = `<div class="sd"><h3>Jadwal Berikutnya<span class="r">Mendatang</span></h3>${lead.length ? lead.map((c, i) => `<div class="lbr" onclick="openEntity('Contents','${c.ID}')"><span class="rk ${i > 2 ? "n" : ""}" style="${i < 3 ? `--g:${MEDAL[i]}` : ""}">${i + 1}</span>${avatar(accById(c.AccountID), "sm")}<div class="m"><b>${esc(c.Title)}</b><small>${fmtShort(c.Date)} · ${esc(c.Time || "Waktu belum ditentukan")} · ${esc(c.Status)}</small></div><b>${esc(c.Format)}</b></div>`).join("") : `<div class="empty" style="padding:14px 6px"><b>Tidak ada jadwal mendatang</b>Tambahkan konten planner berikutnya.</div>`}</div>`;
   const left = Math.max(0, mo.length - pubM.length);
   const mission = `<div class="mis"><svg width="64" height="64" viewBox="0 0 64 64" aria-hidden="true"><rect x="10" y="26" width="44" height="30" rx="5" fill="#7c5cff"/><rect x="6" y="18" width="52" height="12" rx="4" fill="#a78bfa"/><rect x="29" y="18" width="6" height="38" fill="#ffc933"/><path d="M32 18c-6-12-18-6-12 0M32 18c6-12 18-6 12 0" fill="none" stroke="#ffc933" stroke-width="4" stroke-linecap="round"/></svg><div style="flex:1;min-width:0"><small>${left ? `Publish ${left} konten lagi untuk menutup bulan ${bln}` : `Semua konten ${bln} sudah tayang!`}</small><b>Misi ${bln}</b><div class="pl"><div class="track"><i style="width:${mo.length ? (pubM.length / mo.length) * 100 : 0}%;--c:var(--ac)"></i></div><em>${pubM.length}/${mo.length}</em></div></div></div>`;
   return (
     `<div class="dwrap"><div class="dmain">${hero}
-    <div class="sh"><h3>Menu Utama</h3></div>${menu}
     <div class="sh"><h3>Lanjutkan Bekerja</h3><button onclick="S.cmode='list';S.range='upcoming';store.set('cp2_cmode','list');go('content')">Lihat Semua</button></div>${cont}
     <div class="sh"><h3>Pipeline Konten</h3></div>${skills}
      <div class="sh"><h3>Akun Anda</h3><div class="acc-nav"><button type="button" onclick="scrollAccounts(-1)" aria-label="Akun sebelumnya" title="Akun sebelumnya">${ic("chevL", 18)}</button><button type="button" onclick="scrollAccounts(1)" aria-label="Akun berikutnya" title="Akun berikutnya">${ic("chevR", 18)}</button></div></div>${accs}

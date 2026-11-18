@@ -122,11 +122,6 @@ function downloadCSV(rows, o) {
     "Link Post",
     "Link Hasil",
     "Link Referensi",
-    "Reach",
-    "Likes",
-    "Comments",
-    "Shares",
-    "Saves",
   ];
   const q = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
   const body = rows.map((c) => {
@@ -150,11 +145,6 @@ function downloadCSV(rows, o) {
       pj(c.Links, [])
         .map((x) => x.url)
         .join(" "),
-      c.Reach,
-      c.Likes,
-      c.Comments,
-      c.Shares,
-      c.Saves,
     ]
       .map(q)
       .join(",");

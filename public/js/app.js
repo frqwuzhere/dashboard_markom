@@ -67,16 +67,16 @@ function ic(name, size = 20) {
 
 function setNavCollapsed(collapsed) {
   const app = document.getElementById("app"),
-    button = document.getElementById("navCollapseBtn"),
-    expandButton = document.getElementById("navExpandBtn");
-  if (!app || !button || !expandButton) return;
+    headerButton = document.getElementById("navToggleHeader");
+  if (!app) return;
   app.classList.toggle("nav-collapsed", collapsed);
-  const side = document.documentElement.dataset.side || "right";
-  button.innerHTML = ic(side === "right" ? "chevR" : "chevL", 18);
-  button.setAttribute("aria-expanded", String(!collapsed));
-  expandButton.setAttribute("aria-expanded", String(!collapsed));
-  expandButton.setAttribute("aria-label", "Toggle sidebar");
-  expandButton.title = "Toggle sidebar";
+  if (headerButton) {
+    headerButton.innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" viewBox="0 0 24 24" class="iconify iconify--ri art-svg-icon inline"><path fill="currentColor" d="M3 4h18v2H3zm0 7h12v2H3zm0 7h18v2H3z"></path></svg>';
+    headerButton.setAttribute("aria-expanded", String(!collapsed));
+    headerButton.setAttribute("aria-label", "Toggle sidebar");
+    headerButton.title = "Toggle sidebar";
+  }
 }
 function toggleNav() {
   const collapsed = !document
@@ -929,8 +929,13 @@ const defAcc = () => (isAll() ? (S.data.accounts[0] || {}).ID || "" : S.acc);
 function avatar(a, cls = "") {
   if (!a)
     return `<span class="av all ${cls}" aria-hidden="true">${ic("users", cls === "sm" ? 13 : 16)}</span>`;
+  const platform = String(a.Platform || "").trim().toLowerCase();
+  const facebookAvatar =
+    platform === "facebook" || platform.startsWith("facebook ")
+      ? PLATFORM_AVATARS.Facebook
+      : "";
   const image = String(
-    a.AvatarUrl || PLATFORM_AVATARS[a.Platform] || "",
+    facebookAvatar || a.AvatarUrl || PLATFORM_AVATARS[a.Platform] || "",
   ).trim();
   const imageSrc = logoCandidates_(image)[0];
   if (
@@ -1091,7 +1096,7 @@ const VIEWS = {
   campaign: ["Campaign", "flag"],
   ideas: ["Idea Bank", "bulb"],
   resources: ["Resources", "folder"],
-  analytics: ["Analytics", "chart"],
+  analytics: ["Ringkasan Planner", "chart"],
   accounts: ["Akun", "users"],
   settings: ["Pengaturan", "gear"],
 };
@@ -1175,7 +1180,6 @@ function applyLogo() {
   });
 }
 function chrome() {
-  $("#icPromo").innerHTML = ic("sheet", 22);
   $("#bellBtn").innerHTML =
     ic("bell", 20) + '<i class="bdot" id="bellDot"></i>';
   $("#icNew").innerHTML = ic("plus", 18);
@@ -1327,7 +1331,11 @@ function render() {
           settings: vSettings,
         }[v]();
     if (S.ready && v === "dashboardView")
-      window.SocialDashboard?.mount($("#socialDashboardRoot"), api);
+      window.SocialDashboard?.mount(
+        $("#socialDashboardRoot"),
+        $("#socialDashboardHeader"),
+        api,
+      );
   }
   if (v === "content" && S.cmode === "calendar" && !isMob()) bindDnD();
 }

@@ -31,13 +31,6 @@ const CONTENT_FIELDS = [
   { k: "PostLink", l: "Link post (setelah tayang)", t: "url" },
   { k: "ResultLink", l: "Link hasil konten (Drive, dll)", t: "url" },
   { k: "Links", l: "Link referensi", t: "links", full: 1 },
-  { sec: "Performa" },
-  { k: "Views", l: "Views", t: "number" },
-  { k: "Reach", t: "number" },
-  { k: "Likes", t: "number" },
-  { k: "Comments", t: "number" },
-  { k: "Shares", t: "number" },
-  { k: "Saves", t: "number" },
   { k: "Notes", l: "Catatan", t: "textarea", full: 1 },
 ];
 const ENT = {
@@ -163,34 +156,7 @@ function addLinkRow(btn, focus = true) {
   w.insertAdjacentHTML("beforeend", linkRow());
   if (focus) w.lastElementChild.querySelector("[data-l=url]").focus();
 }
-const PERF_KEYS = ["Views", "Reach", "Likes", "Comments", "Shares", "Saves"];
-function autoPanel(r) {
-  const n = (v) =>
-    v === "" || v == null ? "–" : Number(v).toLocaleString("id-ID");
-  const eng = ["Likes", "Comments", "Shares", "Saves"].reduce(
-      (a, k) => a + (+r[k] || 0),
-      0,
-    ),
-    base = +r.Reach || 0;
-  const er = base
-      ? ((eng / base) * 100).toFixed(1).replace(".", ",") + "%"
-      : "–",
-    vr = r.ReachSrc === "views";
-  const tiles = [
-    ["Views", r.Views],
-    [vr ? "Reach*" : "Reach", r.Reach],
-    ["Likes", r.Likes],
-    ["Comments", r.Comments],
-    ["Shares", r.Shares],
-    ["Saves", r.Saves],
-  ];
-  return `<div class="f full"><div class="autom">${tiles.map(([l, v]) => `<div class="kpi"><span>${l}</span><b>${n(v)}</b></div>`).join("")}<div class="kpi"><span>Engagement rate</span><b>${er}</b></div></div>
-    <p class="hint">${r.PostedTime ? `Tayang ${esc(r.PostedDate)} pukul ${esc(r.PostedTime)} WIB${r.Time && r.Time !== r.PostedTime ? ` (rencana ${esc(r.Time)})` : ""}. ` : ""}Otomatis dari API ${esc(r.MetricsSrc || "")}, diperbarui ${esc(r.MetricsAt || "-")}.${vr ? " *Platform ini tidak menyediakan reach, jadi Views dipakai sebagai pembanding." : ""} Angka ini tidak diedit manual.</p></div>`;
-}
 function fieldHTML(f, rec) {
-  if (f.sec === "Performa" && rec.ID && rec.AutoMetrics)
-    return `<div class="fsec">Performa</div>${autoPanel(rec)}`;
-  if (rec.ID && rec.AutoMetrics && PERF_KEYS.includes(f.k)) return "";
   if (f.sec) return `<div class="fsec">${f.sec}</div>`;
   if (f.t === "copy")
     return `<div class="f full" style="flex-direction:row"><button type="button" class="btn sm" onclick="copyCaption()">${ic("copy", 15)}Salin caption + hashtag</button></div>`;

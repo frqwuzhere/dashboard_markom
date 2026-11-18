@@ -191,6 +191,7 @@ export function normalizeMasterRows(rows) {
       title: row.title == null ? "" : String(row.title),
       caption: row.caption == null ? "" : String(row.caption),
       contentType: String(row.content_type || "Unknown").trim() || "Unknown",
+      durationSeconds: normalizeMetric(row.duration_seconds),
       url: row.url == null ? "" : String(row.url),
       views: normalizeMetric(row.views),
       viewsType: row.views_type == null ? null : String(row.views_type),

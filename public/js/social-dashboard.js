@@ -6,6 +6,12 @@
     TikTok: "#111827",
     YouTube: "#ed4242",
   };
+  const PLATFORM_ICONS = {
+    Instagram: "/assets/img/instagram.png",
+    Facebook: "/assets/img/facebook-app-symbol.png",
+    TikTok: "/assets/img/tik-tok.png",
+    YouTube: "/assets/img/youtube.png",
+  };
   const numberFormat = new Intl.NumberFormat("id-ID");
   const compactFormat = new Intl.NumberFormat("id-ID", {
     notation: "compact",
@@ -54,6 +60,18 @@
     );
   }
 
+  function platformLabel(platform, color) {
+    const iconPath = PLATFORM_ICONS[platform];
+    const icon = iconPath
+      ? `<img src="${iconPath}" alt="" aria-hidden="true">`
+      : "";
+    const iconClass = iconPath ? " social-platform-icon" : "";
+    const facebookClass =
+      platform === "Facebook" ? " social-platform-facebook" : "";
+
+    return `<span class="social-platform${iconClass}${facebookClass}" style="--platform-color:${color}">${icon}${escapeHTML(platform)}</span>`;
+  }
+
   function validLink(value) {
     try {
       const url = new URL(value);
@@ -66,6 +84,17 @@
   function displayNumber(value, compact = false) {
     if (value === null || value === undefined) return "N/A";
     return (compact ? compactFormat : numberFormat).format(value);
+  }
+
+  function formatDuration(value) {
+    if (!Number.isFinite(value)) return "—";
+    const seconds = Math.floor(value);
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainder = seconds % 60;
+    return hours
+      ? `${hours}:${String(minutes).padStart(2, "0")}:${String(remainder).padStart(2, "0")}`
+      : `${minutes}:${String(remainder).padStart(2, "0")}`;
   }
 
   function displayDate(value) {
@@ -114,25 +143,26 @@
     ).join("")}<p class="social-audience-growth"><i class="social-kpi-skeleton social-audience-growth-skeleton"></i></p>`;
   }
 
-  function renderShell(root) {
+  function renderShell(root, headerRoot) {
     const filters = current.filters;
     const selectedPlatform =
       filters.platforms.length === PLATFORM_NAMES.length
         ? "all"
         : filters.platforms[0] || "all";
+    headerRoot.hidden = false;
+    headerRoot.innerHTML = `
+      <div class="social-toolbar">
+        <div class="social-controls" aria-label="Filter dashboard">
+          <label>Dari tanggal<input type="date" data-filter="startDate" value="${escapeHTML(filters.startDate)}"></label>
+          <label>Sampai tanggal<input type="date" data-filter="endDate" value="${escapeHTML(filters.endDate)}"></label>
+          <label>Platform<select data-filter="platform" aria-label="Pilih platform"><option value="all" ${selectedPlatform === "all" ? "selected" : ""}>Semua platform</option>${PLATFORM_NAMES.map((name) => `<option value="${name}" ${selectedPlatform === name ? "selected" : ""}>${name}</option>`).join("")}</select></label>
+          <label>Periode<select data-filter="granularity"><option value="day" ${filters.granularity === "day" ? "selected" : ""}>Harian</option><option value="week" ${filters.granularity === "week" ? "selected" : ""}>Mingguan</option><option value="month" ${filters.granularity === "month" ? "selected" : ""}>Bulanan</option></select></label>
+          <button type="button" class="social-refresh" data-action="refresh">Muat ulang</button>
+        </div>
+        <div class="social-status" data-role="status" aria-live="polite"></div>
+      </div>`;
     root.innerHTML = `
-      <div class="social-dashboard">
-        <section class="social-toolbar" aria-label="Filter dashboard">
-          <div class="social-heading"><div><p class="social-eyebrow">RINGKASAN PERFORMA</p><h2>Social Media Dashboard</h2><p>Data konten berdasarkan tanggal publikasi · Filter platform terpisah dari akun Content Planner</p></div></div>
-          <div class="social-controls">
-            <label>Dari tanggal<input type="date" data-filter="startDate" value="${escapeHTML(filters.startDate)}"></label>
-            <label>Sampai tanggal<input type="date" data-filter="endDate" value="${escapeHTML(filters.endDate)}"></label>
-            <label>Platform<select data-filter="platform" aria-label="Pilih platform"><option value="all" ${selectedPlatform === "all" ? "selected" : ""}>Semua platform</option>${PLATFORM_NAMES.map((name) => `<option value="${name}" ${selectedPlatform === name ? "selected" : ""}>${name}</option>`).join("")}</select></label>
-            <label>Periode<select data-filter="granularity"><option value="day" ${filters.granularity === "day" ? "selected" : ""}>Harian</option><option value="week" ${filters.granularity === "week" ? "selected" : ""}>Mingguan</option><option value="month" ${filters.granularity === "month" ? "selected" : ""}>Bulanan</option></select></label>
-            <button type="button" class="social-refresh" data-action="refresh">Muat ulang</button>
-          </div>
-          <div class="social-status" data-role="status" aria-live="polite"></div>
-        </section>
+      <div class="social-dashboard-content">
         <div class="social-message" data-role="message"></div>
         <section class="social-kpis" data-role="kpis" aria-label="Indikator utama">${loadingKpis()}</section>
         <section class="social-grid">
@@ -434,7 +464,7 @@
       dateStyle: "medium",
       timeStyle: "short",
     }).format(new Date(data.fetchedAt));
-    current.root.querySelector('[data-role="status"]').textContent =
+    current.headerRoot.querySelector('[data-role="status"]').textContent =
       newestSourceDate
         ? `Dibaca ${fetchedLabel} · Data master terakhir: ${newestSourceDate} (waktu sumber)`
         : `Dibaca ${fetchedLabel} · Waktu pembaruan sumber belum tersedia`;
@@ -503,6 +533,7 @@
           const platformColor = PLATFORM_COLORS[row.platform] || "#64748b";
           const views = displayNumber(row.views);
           const interactions = displayNumber(row.interactions);
+          const duration = formatDuration(row.durationSeconds);
           const linkCell = link
             ? `<a href="${escapeHTML(link)}" target="_blank" rel="noopener noreferrer">Buka</a>`
             : "—";
@@ -510,9 +541,10 @@
           return `
           <tr>
             <td>${rank}</td>
-            <td><span class="social-platform" style="--platform-color:${platformColor}">${escapeHTML(row.platform)}</span></td>
+            <td>${platformLabel(row.platform, platformColor)}</td>
             <td>${escapeHTML(displayDate(row.publishedDate))}</td>
             <td>${escapeHTML(row.contentType)}</td>
+            <td>${escapeHTML(duration)}</td>
             <td class="social-content-title">${escapeHTML(title)}</td>
             <td class="social-metric-cell" title="${escapeHTML(views)}">${escapeHTML(views)}</td>
             <td class="social-metric-cell" title="${escapeHTML(interactions)}">${escapeHTML(interactions)}</td>
@@ -529,6 +561,7 @@
               <th>Platform</th>
               <th>Tanggal</th>
               <th>Jenis</th>
+              <th>Durasi</th>
               <th>Konten</th>
               <th>Views</th>
               <th>Interaksi</th>
@@ -564,7 +597,7 @@
 
     return `
       <article class="social-audience-card">
-        <span class="social-platform" style="--platform-color:${platformColor}">${escapeHTML(item.platform)}</span>
+        ${platformLabel(item.platform, platformColor)}
         <strong>${escapeHTML(displayNumber(item.value))}</strong>
         <small>${escapeHTML(metricLabel)} · ${escapeHTML(displayDate(item.snapshotDate))}</small>
         <small class="${statusClass}">${statusLabel}</small>
@@ -606,7 +639,7 @@
     const instance = current;
     const requestId = ++instance.requestId;
     const startedAt = Date.now();
-    const status = instance.root.querySelector('[data-role="status"]');
+    const status = instance.headerRoot.querySelector('[data-role="status"]');
     const message = instance.root.querySelector('[data-role="message"]');
     instance.root.classList.add("is-loading");
     instance.root.querySelector('[data-role="kpis"]').innerHTML = loadingKpis();
@@ -694,10 +727,11 @@
     }
   }
 
-  function mount(root, api) {
+  function mount(root, headerRoot, api) {
     destroy();
     current = {
       root,
+      headerRoot,
       api,
       filters: savedFilters
         ? { ...savedFilters, platforms: [...savedFilters.platforms] }
@@ -708,9 +742,11 @@
       requestId: 0,
       data: null,
     };
-    renderShell(root);
+    renderShell(root, headerRoot);
     root.addEventListener("change", onChange);
     root.addEventListener("click", onClick);
+    headerRoot.addEventListener("change", onChange);
+    headerRoot.addEventListener("click", onClick);
     current.resizeObserver = new ResizeObserver(() =>
       current?.charts.forEach((chart) => chart.resize()),
     );
@@ -731,11 +767,15 @@
     current.requestId += 1;
     current.root.removeEventListener("change", onChange);
     current.root.removeEventListener("click", onClick);
+    current.headerRoot.removeEventListener("change", onChange);
+    current.headerRoot.removeEventListener("click", onClick);
     current.resizeObserver?.disconnect();
     current.themeObserver?.disconnect();
     current.charts.forEach((chart) => chart.dispose());
     current.charts.clear();
     current.root.replaceChildren();
+    current.headerRoot.replaceChildren();
+    current.headerRoot.hidden = true;
     current = null;
   }
 

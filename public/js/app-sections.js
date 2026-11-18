@@ -149,82 +149,36 @@ function vResources() {
 
 /* ======================= ANALYTICS ======================= */
 function vAnalytics() {
-  const m = inMonth(scoped(S.data.contents)).filter((c) => +c.Reach > 0);
-  const sum = (k) => m.reduce((a, c) => a + (+c[k] || 0), 0);
-  const eng = (c) =>
-    ["Likes", "Comments", "Shares", "Saves"].reduce(
-      (a, k) => a + (+c[k] || 0),
-      0,
-    );
-  const er = (c) => (+c.Reach ? (eng(c) / +c.Reach) * 100 : 0);
-  const avgER = m.length ? m.reduce((a, c) => a + er(c), 0) / m.length : 0;
-  const top = [...m].sort((a, b) => b.Reach - a.Reach),
-    maxR = Math.max(1, ...top.map((c) => +c.Reach));
-  const avgBy = (key, fn) => {
-    const o = {};
-    m.forEach((c) => {
-      const k = fn(c);
-      (o[k] = o[k] || []).push(c);
-    });
-    return Object.entries(o).map(([k, l]) => [
-      k,
-      l.reduce((a, c) => a + er(c), 0) / l.length,
-      Math.round(l.reduce((a, c) => a + +c.Reach, 0) / l.length),
-      l.length,
-    ]);
-  };
-  const byF = avgBy("f", (c) => c.Format).sort((a, b) => b[2] - a[2]),
-    maxF = Math.max(1, ...byF.map((x) => x[2]));
-  const byT = avgBy("t", (c) => c.Time || "—").sort((a, b) => b[1] - a[1]);
-  const byD = avgBy("d", (c) => HARI_F[pd(c.Date).getDay()]).sort(
-    (a, b) => b[1] - a[1],
-  );
-  const byA = isAll()
-    ? S.data.accounts.map((a) => {
-        const l = m.filter((c) => c.AccountID === a.ID);
-        return [a, l.reduce((s, c) => s + +c.Reach, 0), l.length];
-      })
-    : [];
-  const maxA = Math.max(1, ...byA.map((x) => x[1]));
+  const list = inMonth(scoped(S.data.contents));
+  const statuses = ["Idea", "Draft", "Content done", "Scheduled", "Published"];
+  const countByStatus = (status) =>
+    list.filter((content) => content.Status === status).length;
+  const formats = [...new Set(list.map((content) => content.Format || "Lainnya"))]
+    .map((format) => [
+      format,
+      list.filter((content) => (content.Format || "Lainnya") === format).length,
+    ])
+    .sort((a, b) => b[1] - a[1]);
+  const maxFormat = Math.max(1, ...formats.map(([, count]) => count));
+  const sorted = [...list].sort(sortDT);
   const head = `<div class="tb"><div class="mnav"><button class="ib bare" onclick="shiftMonth(-1)" aria-label="Bulan sebelumnya">${ic("chevL")}</button><h2>${BULAN[S.month.getMonth()]} ${S.month.getFullYear()}</h2><button class="ib bare" onclick="shiftMonth(1)" aria-label="Bulan berikutnya">${ic("chevR")}</button></div></div>`;
-  if (!m.length)
+  if (!list.length)
     return (
       head +
-      `<div class="pn"><div class="empty"><b>Belum ada data performa bulan ini</b>Isi Reach, Likes, dan metrik lain di form konten yang sudah published.</div></div>`
+      `<div class="pn"><div class="empty"><b>Belum ada konten planner bulan ini</b>Tambahkan konten untuk mulai melacak jadwal dan progres produksi.</div></div>`
     );
   return (
     head +
     `<div class="kpis">
-    <div class="kpi"><span>Total reach</span><b>${cf(sum("Reach"))}</b></div><div class="kpi"><span>Likes</span><b>${cf(sum("Likes"))}</b></div>
-    <div class="kpi"><span>Comments</span><b>${cf(sum("Comments"))}</b></div><div class="kpi"><span>Saves</span><b>${cf(sum("Saves"))}</b></div>
-    <div class="kpi"><span>Rata-rata ER</span><b>${avgER.toFixed(1)}%</b></div><div class="kpi"><span>Konten diukur</span><b>${m.length}</b></div></div>
+    <div class="kpi"><span>Total konten</span><b>${list.length}</b></div>
+    <div class="kpi"><span>Sudah tayang</span><b>${countByStatus("Published")}</b></div>
+    <div class="kpi"><span>Terjadwal</span><b>${countByStatus("Scheduled")}</b></div>
+    <div class="kpi"><span>Dalam produksi</span><b>${countByStatus("Draft") + countByStatus("Content done")}</b></div></div>
   <div class="dg">
-    <div class="pn s7"><h3>Reach tertinggi</h3><div class="bars">${top
-      .slice(0, 8)
-      .map(
-        (c) =>
-          `<div class="bl" style="cursor:pointer" onclick="openEntity('Contents','${c.ID}')"><span title="${esc(c.Title)}">${esc(c.Title)}</span><div class="b"><i style="width:${(c.Reach / maxR) * 100}%;--c:${FC[c.Format]}"></i></div><span>${cf(c.Reach)}</span></div>`,
-      )
-      .join("")}</div></div>
-    <div class="pn s5"><h3>Waktu terbaik (ER)</h3>
-      <div class="sec-t" style="margin-top:0">Jam posting</div>${byT
-        .slice(0, 3)
-        .map(
-          ([k, e, , n], i) =>
-            `<div class="li"><span class="chip ${i ? "plain" : ""}" style="--c:var(--ac)">${i === 0 ? "Terbaik" : "#" + (i + 1)}</span><div class="m"><b>${esc(k)}</b><span>${n} konten</span></div><b>${e.toFixed(1)}%</b></div>`,
-        )
-        .join("")}
-      <div class="sec-t">Hari posting</div>${byD
-        .slice(0, 3)
-        .map(
-          ([k, e, , n], i) =>
-            `<div class="li"><span class="chip ${i ? "plain" : ""}" style="--c:var(--ac)">${i === 0 ? "Terbaik" : "#" + (i + 1)}</span><div class="m"><b>${esc(k)}</b><span>${n} konten</span></div><b>${e.toFixed(1)}%</b></div>`,
-        )
-        .join("")}</div>
-    <div class="pn ${isAll() ? "s6" : "s12"}"><h3>Rata-rata reach per format</h3><div class="bars">${byF.map(([f, , r]) => `<div class="bl"><span>${esc(f)}</span><div class="b"><i style="width:${(r / maxF) * 100}%;--c:${FC[f]}"></i></div><span>${cf(r)}</span></div>`).join("")}</div></div>
-    ${isAll() ? `<div class="pn s6"><h3>Reach per akun</h3><div class="bars">${byA.map(([a, r, n]) => `<div class="bl"><span>${esc(a.Name)}</span><div class="b"><i style="width:${(r / maxA) * 100}%;--c:${esc(a.Color)}"></i></div><span>${cf(r)}</span></div>`).join("")}</div></div>` : ""}
-    <div class="pn s12"><h3>Detail performa</h3><div class="twrap" style="border:0"><table><thead><tr><th>Konten</th>${isAll() ? "<th>Akun</th>" : ""}<th>Tanggal</th><th>Format</th><th style="text-align:right">Reach</th><th style="text-align:right">Likes</th><th style="text-align:right">Comments</th><th style="text-align:right">Saves</th><th style="text-align:right">ER</th></tr></thead><tbody>
-    ${top.map((c) => `<tr onclick="openEntity('Contents','${c.ID}')"><td class="ttl"><b>${esc(c.Title)}</b></td>${isAll() ? `<td><span class="chip dot" style="--c:${esc(accColor(c.AccountID))}">${esc((accById(c.AccountID) || {}).Name || "")}</span></td>` : ""}<td>${fmtShort(c.Date)}</td><td><span class="chip" style="--c:${FC[c.Format]}">${esc(c.Format)}</span></td><td style="text-align:right">${nf(c.Reach)}</td><td style="text-align:right">${nf(c.Likes)}</td><td style="text-align:right">${nf(c.Comments)}</td><td style="text-align:right">${nf(c.Saves)}</td><td style="text-align:right"><b>${er(c).toFixed(1)}%</b></td></tr>`).join("")}
+    <div class="pn s5"><h3>Konten per status</h3><div class="bars">${statuses.map((status) => `<div class="bl"><span>${esc(status)}</span><div class="b"><i style="width:${(countByStatus(status) / list.length) * 100}%;--c:${SC[status] || "var(--ac)"}"></i></div><span>${countByStatus(status)}</span></div>`).join("")}</div></div>
+    <div class="pn s7"><h3>Konten per format</h3><div class="bars">${formats.map(([format, count]) => `<div class="bl"><span>${esc(format)}</span><div class="b"><i style="width:${(count / maxFormat) * 100}%;--c:${FC[format] || "var(--ac)"}"></i></div><span>${count}</span></div>`).join("")}</div></div>
+    <div class="pn s12"><h3>Detail konten planner</h3><div class="twrap" style="border:0"><table><thead><tr><th>Konten</th>${isAll() ? "<th>Akun</th>" : ""}<th>Tanggal</th><th>Platform</th><th>Format</th><th>Status</th></tr></thead><tbody>
+    ${sorted.map((c) => `<tr onclick="openEntity('Contents','${c.ID}')"><td class="ttl"><b>${esc(c.Title)}</b></td>${isAll() ? `<td><span class="chip dot" style="--c:${esc(accColor(c.AccountID))}">${esc((accById(c.AccountID) || {}).Name || "")}</span></td>` : ""}<td>${fmtShort(c.Date)}</td><td>${esc(c.Platform || "—")}</td><td><span class="chip" style="--c:${FC[c.Format] || "var(--ac)"}">${esc(c.Format || "—")}</span></td><td><span class="chip dot" style="--c:${SC[c.Status] || "var(--ac)"}">${esc(c.Status || "—")}</span></td></tr>`).join("")}
     </tbody></table></div></div>
   </div>`
   );

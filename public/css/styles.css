@@ -498,7 +498,7 @@ h1,h2,h3,.fd{letter-spacing:-.02em}
 .cta:hover{filter:brightness(1.07)}
 .lpill{position:absolute;z-index:2;top:20px;right:22px;display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.88);border-radius:999px;padding:9px 16px;font-weight:700;font-size:13px;color:#0b1b3f;box-shadow:0 4px 14px rgba(37,99,235,.15)}
 /* continue */
-.cont{display:flex;align-items:center;gap:18px;padding:16px;border-radius:22px;background:linear-gradient(135deg,color-mix(in srgb,var(--ac) 9%,var(--card)),color-mix(in srgb,var(--ac) 16%,var(--card)));box-shadow:var(--sh)}
+.cont{display:flex;align-items:center;gap:18px;padding:16px;border:1px solid var(--line);border-radius:22px;background:linear-gradient(135deg,color-mix(in srgb,var(--ac) 9%,var(--card)),color-mix(in srgb,var(--ac) 16%,var(--card)));box-shadow:var(--sh)}
 .cont .th{width:150px;height:100px;border-radius:16px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#fff;background:linear-gradient(135deg,var(--c),color-mix(in srgb,var(--c) 55%,#000))}
 .cont .th small{font-weight:700;opacity:.9}
 .cont .cb{flex:1;min-width:0}.cont .cb b{display:block;font-size:18px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -508,6 +508,7 @@ h1,h2,h3,.fd{letter-spacing:-.02em}
 /* skills */
 .skg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
 .sk{position:relative;display:flex;align-items:center;gap:12px;text-align:left;padding:16px 14px;border-radius:18px;background:color-mix(in srgb,var(--c) 11%,var(--card));border:1px solid color-mix(in srgb,var(--c) 14%,var(--card))}
+.app .sk{border-color:color-mix(in srgb,var(--c) 30%,var(--line))}
 .sk:hover{transform:translateY(-2px)}
 .sk i{width:44px;height:44px;border-radius:50%;background:var(--c);color:#fff;display:grid;place-items:center;flex-shrink:0}
 .sk b{display:block;font-size:14.5px;font-weight:800}.sk small{font-size:12.5px;color:var(--ink2)}
@@ -728,28 +729,54 @@ body,button,input,select,textarea{font-family:var(--fp)}
 html[data-side=right] .app{flex-direction:row-reverse}
 .app .rail {
   width: 224px;
-  margin: 12px;
-  height: calc(100vh - 24px);
-  height: calc(100dvh - 24px);
+  margin: 0;
+  height: 100vh;
+  height: 100dvh;
   border: 0;
-  border-radius: 28px;
+  border-right: 1px solid var(--line);
+  border-radius: 0;
   background: var(--card);
-  box-shadow: var(--blueSh);
+  box-shadow: none;
   padding: 18px 10px 14px;
   gap: 6px;
   scrollbar-width: none;
 }
+html[data-side="right"] .app .rail {
+  border-right: 0;
+  border-left: 1px solid var(--line);
+}
+.app .rail .mark { border-bottom: 0; }
+.app .rail .prof .acc-btn { border: 0; box-shadow: none; }
 .app .rail::-webkit-scrollbar{display:none}
 .app .main{position:relative}
-.app .head{position:relative;z-index:3;margin:0;padding:10px 20px 12px;gap:8px;background:var(--hd);color:#fff;
-  border-radius:0 0 34px 34px;box-shadow:0 14px 30px rgba(24,70,150,.2)}
-.app .head h1{color:#fff;font-size:22px;font-weight:800;white-space:normal}
-.app .head .sub,.app .head .sub .muted{color:rgba(255,255,255,.82)}
-.app .head .ib{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);color:#fff;border-radius:14px}
+.app .head{position:relative;z-index:3;margin:0;padding:10px 20px 12px;gap:8px;background:var(--bg);color:var(--ink2);
+  font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  border:0;border-radius:0;box-shadow:none}
+.app .head h1{color:var(--ink2);font-size:16px;font-weight:600;white-space:normal}
+.app .head .sub,.app .head .sub .muted{color:var(--ink3)}
+.app .head .ib{background:var(--card);border:1px solid var(--line);color:var(--ink2);border-radius:12px}
 .app .head .ib.bare{background:transparent;border-color:transparent}
-.app .head .ib:hover{background:rgba(255,255,255,.26)}
-.app .head .chips{color:#fff}
+.app .head .ib:hover{background:var(--card2)}
+.app .head .chips{color:var(--ink2)}
 .app .head .ttl{flex:0 1 auto;min-width:0}
+.app .head .nav-toggle-header{
+  display:inline-flex;
+  flex:0 0 32px;
+  align-items:center;
+  justify-content:center;
+  width:32px;
+  height:32px;
+  padding:0;
+  border:0;
+  border-radius:10px;
+  background:transparent;
+  color:var(--ink2);
+  cursor:pointer;
+  transition:background-color .18s ease,color .18s ease;
+}
+.app .head .nav-toggle-header:hover{background:var(--card2);color:var(--ac)}
+.app .head .nav-toggle-header:active{background:var(--acsoft)}
+.app .head .nav-toggle-header svg{display:block;width:18px;height:18px}
 .app .head .sub{max-width:none;overflow:visible}
 .app .head #bellBtn,.app .head #refBtn,.app .head #modeBtn,.app .head #expBtnD,.app .head #topSetBtn {
   width: 32px;
@@ -760,50 +787,60 @@ html[data-side=right] .app{flex-direction:row-reverse}
 .app .head .newb {
   width: 32px;
   height: 32px;
-  border: 1px solid rgba(255, 255, 255, .32);
-  background: rgba(255, 255, 255, .18);
-  color: #fff;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--ink2);
   box-shadow: none;
 }
-.app .head .newb:hover { background: rgba(255, 255, 255, .3); }
+.app .head .newb:hover { background: var(--card2); }
 .app .head .search {
   height: 38px;
-  border: 0;
+  border: 1px solid var(--line);
   border-radius: 999px;
-  background: #fff;
-  box-shadow: 0 6px 16px rgba(10, 40, 100, .18);
+  background: var(--card);
+  box-shadow: none;
 }
-.app .head .search input{color:#10213f}
+.app .head .search input{color:var(--ink)}
 .app .head #bellBtn,.app .head #refBtn,.app .head #modeBtn,.app .head #expBtnD,.app .head #topSetBtn {
-  border: 1px solid rgba(255, 255, 255, .32);
-  background: rgba(255, 255, 255, .18);
-  color: #fff;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--ink2);
   box-shadow: none;
 }
 .app .head #bellBtn:hover,.app .head #refBtn:hover,.app .head #modeBtn:hover,.app .head #expBtnD:hover,.app .head #topSetBtn:hover {
-  background: rgba(255, 255, 255, .3);
+  background: var(--card2);
 }
 .app .head .profile-nav {
   min-height: 34px;
-  border-color: rgba(255, 255, 255, .22);
-  background: transparent;
-  color: #fff;
+  border-color: var(--line);
+  background: var(--card);
+  color: var(--ink2);
 }
-.app .head .profile-nav:hover { background: rgba(255, 255, 255, .12); }
+.app .head .profile-nav:hover { background: var(--card2); }
 .app .head .profile-nav .av { width: 28px; height: 28px; }
-.app .head .btn.pri{background:#fff;color:#1b4fb8;border:0;box-shadow:0 8px 18px rgba(10,40,100,.2)}
-.app .body{padding:22px 28px 60px}
+.app .head .btn.pri{background:var(--ac);color:#fff;border:0;box-shadow:none}
+.app .body{padding:22px 20px 60px}
 .app .pn,.app .sd,.app .sc,.app .card,.app .kpi{border:0;border-radius:24px;box-shadow:var(--blueSh)}
 .app .sh h3{font-size:18px;font-weight:800}
 
 /* ---------- Menu navigasi (rail) ---------- */
 .app .navi {
-  padding: 11px 10px;
+  padding: 11px 15px;
   border-radius: 16px;
   gap: 14px;
+  transition:gap .2s ease,background-color .18s ease,color .18s ease;
   font-weight: 600;
   color: var(--ink2);
 }
+.app .navi>.i{flex:0 0 18px}
+.app .navi>span:not(.cnt){
+  max-width:150px;
+  overflow:hidden;
+  white-space:nowrap;
+  opacity:1;
+  transition:max-width .2s ease,opacity .16s ease,transform .2s ease;
+}
+.app .navi>.cnt{transition:opacity .16s ease,visibility .16s ease}
 .app .navi:hover{background:var(--tile);color:var(--ink)}
 .app .navi.active{background:linear-gradient(135deg,#10264b,#1c3f74);color:#fff;box-shadow:0 8px 18px rgba(16,38,75,.28)}
 .app .navi .cnt{background:var(--tile);color:var(--ink2)}
@@ -842,7 +879,7 @@ html[data-side=right] .app{flex-direction:row-reverse}
 #npin.on{color:#d97706}
 
 /* ---------- Dashboard: kartu progres navy ---------- */
-.pgc{position:relative;display:flex;align-items:center;gap:26px;padding:28px 30px 46px;margin-bottom:40px;border-radius:28px;
+.pgc{position:relative;display:flex;align-items:center;gap:26px;padding:28px 30px;margin-bottom:0;border-radius:28px;
   background:var(--navy);color:#fff;box-shadow:0 18px 40px rgba(13,31,64,.32)}
 .pgr{position:relative;width:124px;height:124px;flex-shrink:0}
 .pgr svg{display:block}
@@ -856,10 +893,6 @@ html[data-side=right] .app{flex-direction:row-reverse}
 .pgb{height:9px;border-radius:9px;background:rgba(255,255,255,.28);margin:12px 0 10px;max-width:320px;overflow:hidden}
 .pgb i{display:block;height:100%;background:#22c55e;border-radius:9px}
 .pgs{font-size:13.5px;opacity:.8;max-width:420px}
-.pgo{position:absolute;right:22px;bottom:-24px;display:flex;align-items:center;gap:14px;height:54px;padding:0 6px 0 24px;border-radius:19px;
-  background:linear-gradient(135deg,#3b8bff,#1d63e8);color:#fff;font-weight:700;font-size:16px;box-shadow:0 12px 26px rgba(29,99,232,.45);border:4px solid var(--bg)}
-.pgo span{width:42px;height:38px;border-radius:13px;background:#0d1f40;display:grid;place-items:center}
-
 /* ---------- Menu utama (ubin) ---------- */
 .mg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:12px 0 26px}
 .mt{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;min-height:112px;padding:18px 8px 14px;
@@ -879,6 +912,11 @@ html[data-side=right] .app{flex-direction:row-reverse}
 .kc{flex:0 0 auto;width:240px;scroll-snap-align:start;text-align:left;display:flex;flex-direction:column;gap:6px;padding:16px 18px;border-radius:22px;color:#fff;
   background:linear-gradient(135deg,color-mix(in srgb,var(--c) 40%,#0b1d3c),#0d2145);box-shadow:var(--blueSh)}
 .kc.on{background:linear-gradient(135deg,var(--c),color-mix(in srgb,var(--c) 50%,#0a2a66));outline:3px solid color-mix(in srgb,var(--c) 35%,#fff)}
+.app .kc{border:1px solid var(--line);border-top:3px solid var(--c);background:var(--card);color:var(--ink);box-shadow:var(--sh)}
+.app .kc.on{border-color:var(--ac);border-top-color:var(--c);background:var(--card);outline:2px solid color-mix(in srgb,var(--ac) 18%,transparent)}
+.app .kc b{color:var(--ink)}
+.app .kc small{color:var(--ink3);opacity:1}
+.app .kc .kt{background:var(--card2)}
 .kc b{font-size:23px;font-weight:800;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .kc small{font-size:13px;opacity:.85;font-weight:600}
 .kp{display:flex;align-items:center;gap:10px;margin-top:6px}
@@ -918,11 +956,11 @@ html[data-side=right] .app{flex-direction:row-reverse}
 /* ---------- Tablet & HP ---------- */
 @media (max-width:1280px){.app .rail{width:232px}}
 @media (max-width:1024px){.app .rail{width:76px;padding:16px 8px}.app .promo,.nw{display:none}.mg{gap:10px}}
-@media (max-width:900px){.pgc{padding-bottom:50px}}
+@media (max-width:900px){.pgc{padding:24px}}
 @media (max-width:760px){
   .app .rail{display:none}
-  .app .head{padding:12px 12px 14px;border-radius:0 0 24px 24px;gap:6px}
-  .app .head h1{font-size:19px}
+  .app .head{padding:12px 12px 14px;border-radius:0;gap:6px}
+  .app .head h1{font-size:16px;font-weight:600}
   .app .head .ttl{flex:1}
   .app .head .sub{max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
    .app .head #bellBtn,.app .head #refBtn,.app .head #modeBtn,.app .head #expBtnD,.app .head #topSetBtn{width:30px;height:30px;border-radius:9px}
@@ -936,12 +974,11 @@ html[data-side=right] .app{flex-direction:row-reverse}
      text-overflow: ellipsis;
    }
    .app .head .profile-nav > .i { display: none; }
-  .app .head .ib{border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.16)}
+   .app .head .ib{border-color:var(--line);background:var(--card);color:var(--ink2)}
   .app .body{padding:18px 14px 130px}
-  .pgc{gap:14px;padding:20px 16px 44px}
+  .pgc{gap:14px;padding:20px 16px}
   .pgr{width:92px;height:92px}.pgr svg{width:92px;height:92px}.pgr b{font-size:22px}
   .pgt h2{font-size:17px}.pgt p{font-size:16px}.pgt p em{font-size:22px}.pgs{display:none}
-  .pgo{right:14px;height:48px;font-size:14px;padding-left:18px}.pgo span{width:36px;height:34px}
   .mg{gap:9px}
   .mt{min-height:92px;padding:12px 4px 10px;border-radius:18px;font-size:11.5px;gap:8px}
   .mi{width:42px;height:42px;border-radius:14px}.mi svg{width:22px;height:22px}
@@ -973,28 +1010,42 @@ body.locked{position:fixed;inset:0;width:100%;height:100%;overflow:hidden}
 }
 
 /* ---------- Collapsible desktop sidebar ---------- */
-.app.nav-collapsed>.rail{width:64px!important;min-width:64px;flex:0 0 64px;align-items:center;padding:16px 6px!important}
-.app.nav-collapsed>.rail .mark{justify-content:center;padding:2px 0 14px;margin-bottom:6px}
-.app.nav-collapsed>.rail .mark>div,.app.nav-collapsed>.rail .new span,.app.nav-collapsed>.rail .navi span,.app.nav-collapsed>.rail .acc-btn .t,.app.nav-collapsed>.rail .acc-btn .chev{display:none!important}
+.app>.rail{
+  overflow-x:hidden;
+  flex:0 0 auto;
+  min-width:0;
+  transition:width .25s ease,padding .25s ease;
+}
+.app.nav-collapsed>.rail{width:64px!important;align-items:center;padding:18px 6px 14px!important}
+.app.nav-collapsed>.rail .mark{justify-content:center;padding:2px 6px 16px;margin-bottom:10px}
+.app.nav-collapsed>.rail .mark>div:nth-child(2),.app.nav-collapsed>.rail .new span,.app.nav-collapsed>.rail .acc-btn .t,.app.nav-collapsed>.rail .acc-btn .chev{display:none!important}
 .app.nav-collapsed>.rail .new,.app.nav-collapsed>.rail .navi{width:44px;justify-content:center;padding-left:0;padding-right:0}
+.app.nav-collapsed>.rail .navi{gap:0}
+.app.nav-collapsed>.rail .navi>span:not(.cnt){max-width:0;opacity:0;transform:translateX(-4px);visibility:hidden}
+.app.nav-collapsed>.rail .navi>.cnt{display:none}
 .app.nav-collapsed>.rail .promo,.app.nav-collapsed>.rail .nw{display:none!important}
 .app.nav-collapsed>.rail .prof{flex-direction:column;align-items:center}
 .app.nav-collapsed>.rail .prof .acc-btn{width:48px;justify-content:center;padding:8px}
 .app.nav-collapsed>.rail .rail-foot{display:none}
 @media (min-width:761px){
-  .app:not(.nav-collapsed)>.rail{width:224px!important;min-width:224px;flex:0 0 224px;align-items:stretch;padding:18px 8px 14px!important}
+  .app:not(.nav-collapsed)>.rail{width:224px!important;align-items:stretch;padding:18px 8px 14px!important}
   .app:not(.nav-collapsed)>.rail .mark{justify-content:flex-start;padding:2px 6px 16px;margin-bottom:10px}
-  .app:not(.nav-collapsed)>.rail .mark>div,.app:not(.nav-collapsed)>.rail .new span,.app:not(.nav-collapsed)>.rail .navi span,.app:not(.nav-collapsed)>.rail .acc-btn .t{display:block!important}
+  .app:not(.nav-collapsed)>.rail .mark>div:nth-child(2),.app:not(.nav-collapsed)>.rail .new span,.app:not(.nav-collapsed)>.rail .acc-btn .t{display:block!important}
   .app:not(.nav-collapsed)>.rail .new{width:100%;justify-content:center}
-  .app:not(.nav-collapsed)>.rail .navi{width:100%;justify-content:flex-start;padding:11px 8px}
+  .app:not(.nav-collapsed)>.rail .navi{width:100%;justify-content:flex-start;padding:11px 15px}
+  .app:not(.nav-collapsed)>.rail .navi>span:not(.cnt){max-width:150px;opacity:1;transform:translateX(0);visibility:visible}
+  .app:not(.nav-collapsed)>.rail .navi>.cnt{opacity:1;visibility:visible}
   .app:not(.nav-collapsed)>.rail .prof{flex-direction:row;align-items:center}
-  .app:not(.nav-collapsed)>.rail .prof .acc-btn{width:auto;flex:1;justify-content:flex-start;padding:10px 12px}
+.app:not(.nav-collapsed)>.rail .prof .acc-btn{width:auto;flex:1;justify-content:flex-start;padding:10px 12px}
 }
-.nav-collapse{display:none;flex:0 0 34px;width:34px;height:34px;place-items:center;border:1px solid var(--line);border-radius:11px;background:var(--card2);color:var(--ink2)}
-.nav-collapse:hover{color:var(--ac);background:var(--acsoft)}
-.app:not(.nav-collapsed)>.rail .nav-collapse{display:grid}
-.app.nav-collapsed>.rail .mark .logo{cursor:ew-resize}
-.app:not(.nav-collapsed)>.rail .mark .logo{cursor:default}
+
+/* Use the Art Design Pro system font throughout the application. */
+:root{
+  --fp:"Segoe UI",ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,Roboto,"Helvetica Neue",Arial,sans-serif;
+  --fd:var(--fp);
+  --fb:var(--fp);
+}
+body,body *{font-weight:500!important}
 .acc-nav{display:flex;gap:8px;margin-left:auto}
 .acc-nav button{width:34px;height:34px;display:grid;place-items:center;border:1px solid var(--line);border-radius:50%;background:var(--card);color:var(--ac);box-shadow:var(--sh)}
 .acc-nav button:hover{background:var(--acsoft)}

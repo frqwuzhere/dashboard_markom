@@ -7,7 +7,6 @@
 <title>Dashboard Markom</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <link rel="stylesheet" href="/css/styles.css">
 <link rel="stylesheet" href="/css/social-dashboard.css">
 <link rel="icon" type="image/png" href="../assets/img/logo.png">
@@ -29,14 +28,13 @@
 
 <div class="app nav-collapsed" id="app">
   <aside class="rail">
-    <div class="mark"><button class="logo" id="navExpandBtn" onclick="toggleNav()" aria-label="Toggle sidebar" title="Toggle sidebar">CP</button><div><b id="appName">Content Planner</b><small id="ownerLbl">Plan • Create • Publish</small></div><button class="nav-collapse" id="navCollapseBtn" onclick="toggleNav()" aria-label="Perkecil sidebar" title="Perkecil sidebar"></button></div>
+    <div class="mark"><div class="logo" aria-hidden="true">CP</div><div><b id="appName">Content Planner</b><small id="ownerLbl">Plan • Create • Publish</small></div></div>
     <nav id="rnav"></nav>
-    <div class="promo"><span class="pi" id="icPromo"></span><b>Export ke Sheet</b><p>Kirim jadwal &amp; performa konten ke Google Sheet.</p><button onclick="openExport()">Export</button></div>
-    <div class="nw" id="notesW"></div>
   </aside>
 
   <main class="main">
     <header class="head">
+      <button class="ib nav-toggle-header" id="navToggleHeader" onclick="toggleNav()" aria-label="Toggle sidebar" title="Toggle sidebar" aria-expanded="true"></button>
       <div class="ttl"><h1 id="tTitle"></h1><div class="sub" id="tSub"></div></div>
       <button class="ib mob" id="modeBtnM" onclick="toggleMode()" aria-label="Ganti mode"></button>
       <span class="hsp"></span>
@@ -50,6 +48,7 @@
       <button class="ib mob" id="expBtnM" onclick="openExport()" aria-label="Export ke Sheet"></button>
       <button class="profile-nav" id="profileBtn" onclick="openAccMenu(this)" aria-label="Pilih akun sosial"></button>
     </header>
+    <section class="social-dashboard-header" id="socialDashboardHeader" aria-label="Dashboard dan filter" hidden></section>
     <div id="demoBox"></div>
     <section class="body" id="view"></section>
   </main>
